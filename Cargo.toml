@@ -1,0 +1,15 @@
+[package]
+name = "cryptoil"
+version = "0.0.1"
+authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
+
+[dependencies.rustc-serialize]
+git = "https://github.com/rust-lang/rustc-serialize"
+version = "0.2.9"
+
+[lib]
+name = "cryptoil"
+# default path = "src/lib.rs"
+
+[[bin]]
+name = "dgstsum"
