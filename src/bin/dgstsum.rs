@@ -1,28 +1,21 @@
-//use std::io::Reader;
-//use std::io::stdin;
-//use webclient::digest::types::HashAlgorithm;
-//
-//pub fn hash_algorithm_from_lower(name: &str) -> Option<Box<HashAlgorithm+'static>> {
-//    match name {
-//        "-sha1" => Some(Box::new(webclient::digest::sha1::sha1_new()) as Box<HashAlgorithm>),
-//        _ => None
-//    }
-//}
+extern crate cryptoil;
 
+use cryptoil::sha1;
+
+pub fn digest_cmd(command: &str, message: &str) -> String {
+    match command {
+        "-sha1" => sha1::hex_digest(message),
+        _ => panic!("unknown hash algorithm"),
+    }
+}
+
+#[allow(dead_code)]
+#[allow(unstable)]
 fn main() {
-    // get message
-//    let mut reader = stdin();
-//    let message: Vec<u8> = reader.read_to_end().unwrap();
-//
-//    // get hash algorithm
-//    let args = std::os::args();
-//    let command: &str = args[1].as_slice();
-//    let mut hasher = hash_algorithm_from_lower(command).unwrap();
-//
-//    // compute hash
-//    let bytes = hasher.hash(message);
-//    for byte in bytes.into_iter() {
-//        print!("{:02x}", byte);
-//    }
-    println!("");
+    let mut reader = std::io::stdin();
+    let msg: Vec<u8> = reader.read_to_end().unwrap();
+    let message: &str = std::str::from_utf8(msg.as_slice()).unwrap();
+    let args = std::os::args();
+    let command: &str = args[1].as_slice();
+    println!("{}", digest_cmd(command, message));
 }
