@@ -5,7 +5,6 @@ authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
 
 [dependencies.rustc-serialize]
 git = "https://github.com/rust-lang/rustc-serialize"
-version = "0.2.9"
 
 [lib]
 name = "cryptoil"
