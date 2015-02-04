@@ -1,5 +1,5 @@
 # rust-cryptoil
-Rust Cryptography Intrinsics
+Rust Cryptography Intrinsics Library
 
 ## Introduction
 
