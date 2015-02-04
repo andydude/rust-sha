@@ -1,6 +1,6 @@
 use std::simd::u32x4;
-use self::emu;
-use super::rotate;
+use super::super::stdish::num::{PartialInt, RotateInt};
+use super::emu;
 
 extern {
     
@@ -23,18 +23,23 @@ extern {
     pub fn sha1su1(a: u32x4, b: u32x4) -> u32x4;
 }
 
+pub fn has_sha() -> bool {
+    false
+}
+
 /// Digest message block (arm-specific)
-pub fn digest_block(m0: u32x4, m4: u32x4, m8: u32x4, m12: u32x4,
-                    h0: u32x4, e: u32) -> (u32x4, u32) {
+pub fn digest_block(msg_0: u32x4,
+    msg_16: u32x4, msg_32: u32x4, msg_48: u32x4,
+    hash_abcd: u32x4, hash_e: u32) -> (u32x4, u32) {
     unsafe {
         
-        let w0 = m0;
-        let h1 = sha1c(h0, e, w0 + emu::SHA1_K0V);
-        let w1 = m4;
-        let h2 = sha1c(h1, sha1h(emu::get_1st(h0)), w1 + emu::SHA1_K0V);
-        let w2 = m8;
+        let w0 = msg_0;
+        let h1 = sha1c(hash_abcd, hash_e, w0 + emu::SHA1_K0V);
+        let w1 = msg_16;
+        let h2 = sha1c(h1, sha1h(emu::get_1st(hash_abcd)), w1 + emu::SHA1_K0V);
+        let w2 = msg_32;
         let h3 = sha1c(h2, sha1h(emu::get_1st(h1)), w2 + emu::SHA1_K0V);
-        let w3 = m12;
+        let w3 = msg_48;
         let h4 = sha1c(h3, sha1h(emu::get_1st(h2)), w3 + emu::SHA1_K0V);
         let w4 = sha1su1(sha1su0(w0, w1, w2), w3);
         let h5 = sha1c(h4, sha1h(emu::get_1st(h3)), w4 + emu::SHA1_K0V);
@@ -68,8 +73,8 @@ pub fn digest_block(m0: u32x4, m4: u32x4, m8: u32x4, m12: u32x4,
         let h19 = sha1p(h18, sha1h(emu::get_1st(h17)), w18 + emu::SHA1_K3V);
         let w19 = sha1su1(sha1su0(w15, w16, w17), w18);
         let h20 = sha1p(h19, sha1h(emu::get_1st(h18)), w19 + emu::SHA1_K3V);
-        let e20 = rotate::left_u32(emu::get_1st(h19), 30);
+        let e20 = emu::get_1st(h19).rotate_left(30);
 
-        (h0 + h20, e + e20)
+        (hash_abcd + h20, hash_e + e20)
     }
 }

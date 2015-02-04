@@ -1,6 +1,6 @@
 use std::simd::u32x4;
+use super::super::stdish::num::{PartialInt, RotateInt};
 use super::emu;
-use super::super::rotate;
 
 extern {
 
@@ -18,7 +18,7 @@ extern {
 }
 
 /// Checks CPUID.7.0.EBX[29]
-fn has_sha() -> bool {
+pub fn has_sha() -> bool {
     let mut b: u32;
     
     unsafe {
@@ -34,17 +34,18 @@ fn has_sha() -> bool {
 }
 
 /// Digest message block (x86-specific)
-pub fn digest_block(m0: u32x4, m4: u32x4, m8: u32x4, m12: u32x4,
-                    h0: u32x4, e: u32) -> (u32x4, u32) {
+pub fn digest_block_simd(msg_0: u32x4,
+    msg_16: u32x4, msg_32: u32x4, msg_48: u32x4,
+    hash_abcd: u32x4, hash_e: u32) -> (u32x4, u32) {
     unsafe {
         
-        let w0 = m0;
-        let h1 = sha1rnds4(h0, emu::add_1st(e, w0), 0);
-        let w1 = m4;
-        let h2 = sha1rnds4(h1, sha1nexte(h0, w1), 0);
-        let w2 = m8;
+        let w0 = msg_0;
+        let h1 = sha1rnds4(hash_abcd, emu::add_1st(hash_e, w0), 0);
+        let w1 = msg_16;
+        let h2 = sha1rnds4(h1, sha1nexte(hash_abcd, w1), 0);
+        let w2 = msg_32;
         let h3 = sha1rnds4(h2, sha1nexte(h1, w2), 0);
-        let w3 = m12;
+        let w3 = msg_48;
         let h4 = sha1rnds4(h3, sha1nexte(h2, w3), 0);
         let w4 = sha1msg2(sha1msg1(w0, w1) ^ w2, w3);
         let h5 = sha1rnds4(h4, sha1nexte(h3, w4), 0);
@@ -78,8 +79,8 @@ pub fn digest_block(m0: u32x4, m4: u32x4, m8: u32x4, m12: u32x4,
         let h19 = sha1rnds4(h18, sha1nexte(h17, w18), 3);
         let w19 = sha1msg2(sha1msg1(w15, w16) ^ w17, w18);
         let h20 = sha1rnds4(h19, sha1nexte(h18, w19), 3);
-        let e20 = rotate::left_u32(emu::get_1st(h19), 30);
+        let e20 = emu::get_1st(h19).rotate_left(30);
         
-        (h0 + h20, e + e20)
+        (hash_abcd + h20, hash_e + e20)
     }
 }

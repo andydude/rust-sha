@@ -11,4 +11,5 @@ name = "cryptoil"
 # default path = "src/lib.rs"
 
 [[bin]]
-name = "dgstsum"
+name = "digest"
+# default path = "src/bin/digest.rs"

@@ -1,11 +1,10 @@
 extern crate cryptoil;
-
-use cryptoil::sha1;
+use cryptoil::aes;
 
 pub fn digest_cmd(command: &str, message: &str) -> String {
     match command {
-        "-sha1" => sha1::hex_digest(message),
-        _ => panic!("unknown hash algorithm"),
+        "-aes-128-ecb" => aes::hex_encrypt_ecb(message),
+        _ => panic!("unknown cipher algorithm"),
     }
 }
 
