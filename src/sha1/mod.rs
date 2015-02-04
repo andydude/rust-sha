@@ -1,5 +1,6 @@
-use serialize::hex::ToHex;
+//use serialize::hex::ToHex;
 use std::simd::u32x4;
+use std::num::Int;
 use std::old_io::IoError;
 use std::slice::bytes::copy_memory;
 use super::stdish::slice::transmute_memory;

@@ -1,4 +1,7 @@
 use std::simd::u32x4;
+use std::num::Int;
+
+// traits
 
 /// An integer (or vector of integers) that can be set to zero or one.
 pub trait PartialInt: Sized {
@@ -9,24 +12,40 @@ pub trait PartialInt: Sized {
     fn max_value() -> Self;
 }
 
-impl PartialInt for u32 {
+/// An integer (or vector of integers) that can be rotated.
+pub trait RotateInt: Sized {
+    // required
     #[inline]
-    fn zero() -> Self {
-        0u32
+    fn rotate_left(self, n: usize) -> Self;
+    #[inline]
+    fn rotate_right(self, n: usize) -> Self;
+}
+
+/// An integer (or vector of integers) whose bytes can be swapped.
+pub trait SwapBytesInt: Sized {
+    // required
+    fn swap_bytes(self) -> Self;
+
+    // provided
+    #[inline]
+    fn from_be(x: Self) -> Self {
+        if cfg!(target_endian = "big") { x } else { x.swap_bytes() }
     }
     #[inline]
-    fn one() -> Self {
-        1u32
+    fn from_le(x: Self) -> Self {
+        if cfg!(target_endian = "little") { x } else { x.swap_bytes() }
     }
     #[inline]
-    fn min_value() -> Self {
-        ::std::u32::MIN
+    fn to_be(self) -> Self {
+        if cfg!(target_endian = "big") { self } else { self.swap_bytes() }
     }
     #[inline]
-    fn max_value() -> Self {
-        ::std::u32::MAX
+    fn to_le(self) -> Self {
+        if cfg!(target_endian = "little") { self } else { self.swap_bytes() }
     }
 }
+
+// implementations
 
 impl PartialInt for u32x4 {
     fn zero() -> Self {
@@ -49,23 +68,6 @@ impl PartialInt for u32x4 {
     }
 }
 
-/// An integer (or vector of integers) that can be rotated.
-pub trait RotateInt: Sized {
-    #[inline]
-    fn rotate_left(self, n: usize) -> Self;
-    #[inline]
-    fn rotate_right(self, n: usize) -> Self;
-}
-
-impl RotateInt for u32 {
-    fn rotate_left(self, n: usize) -> Self {
-         (self << n) | (self >> (32 - n))
-    }
-    fn rotate_right(self, n: usize) -> Self {
-         (self >> n) | (self << (32 - n))
-    }
-}
-
 impl RotateInt for u32x4 {
     fn rotate_left(self, n: usize) -> Self {
         let y: u32 = n as u32;
@@ -77,37 +79,6 @@ impl RotateInt for u32x4 {
         let y: u32 = n as u32;
         let ny: u32 = (32 - y) as u32;
         (self >> u32x4(y, y, y, y)) | (self << u32x4(ny, ny, ny, ny))
-    }
-}
-
-/// An integer (or vector of integers) whose bytes can be swapped.
-pub trait SwapBytesInt: Sized {
-    fn swap_bytes(self) -> Self;
-
-    // optional
-    #[inline]
-    fn from_be(x: Self) -> Self {
-        if cfg!(target_endian = "big") { x } else { x.swap_bytes() }
-    }
-    #[inline]
-    fn from_le(x: Self) -> Self {
-        if cfg!(target_endian = "little") { x } else { x.swap_bytes() }
-    }
-    #[inline]
-    fn to_be(self) -> Self {
-        if cfg!(target_endian = "big") { self } else { self.swap_bytes() }
-    }
-    #[inline]
-    fn to_le(self) -> Self {
-        if cfg!(target_endian = "little") { self } else { self.swap_bytes() }
-    }
-}
-
-impl SwapBytesInt for u32 {
-    fn swap_bytes(self) -> Self {
-        unsafe {
-            ::std::intrinsics::bswap32(self)
-        }
     }
 }
 

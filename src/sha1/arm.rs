@@ -1,5 +1,5 @@
 use std::simd::u32x4;
-use super::super::stdish::num::{PartialInt, RotateInt};
+use super::super::stdish::num::{RotateInt};
 use super::emu;
 
 extern {

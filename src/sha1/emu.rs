@@ -1,5 +1,7 @@
 use std::simd::u32x4;
-use super::super::stdish::num::RotateInt;
+//use super::super::stdish::num::RotateInt;
+use std::num::Int;
+use stdish::num::RotateInt;
 
 pub const SHA1_H: &'static [u8] = b"\x67\x45\x23\x01\xef\xcd\xab\x89\x98\xba\xdc\xfe\x10\x32\x54\x76\xc3\xd2\xe1\xf0";
 
