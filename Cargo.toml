@@ -3,13 +3,17 @@ name = "cryptoil"
 version = "0.2.0"
 authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
 
+[features]
+default = []
+cryptoil_arm_aes = []
+cryptoil_arm_sha = []
+cryptoil_x86_aes = []
+cryptoil_x86_sha = []
+cryptoil_internals = []
+
 [dependencies.rustc-serialize]
 git = "https://github.com/rust-lang/rustc-serialize"
 
 [lib]
 name = "cryptoil"
 # default path = "src/lib.rs"
-
-[[bin]]
-name = "digest"
-# default path = "src/bin/digest.rs"

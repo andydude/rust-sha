@@ -1,83 +1,147 @@
 //use serialize::hex::ToHex;
 use std::simd::u32x4;
-use std::num::Int;
-use std::old_io::IoError;
-use std::slice::bytes::copy_memory;
-use super::stdish::slice::transmute_memory;
-use super::stdish::io::{Digest, Reset, Read, Write, io_error};
-use super::stdish::num::SwapBytesInt;
+//use std::old_io::IoError;
+use super::stdish::io::{Hasher, Reset, HashRead, HashWrite};
 
-pub mod emu;
+#[unstable(feature = "default", reason = "1.0.0")]
+pub mod hw;
 
-//#[cfg(target_arch = "arm")]
-//pub mod arm;
-//
-//#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-//pub mod x86;
-//
-///// Digest message block in vectors (arm-specific)
-//#[cfg(target_arch = "arm")]
-//#[unstable(feature = "cryptoil", reason = "std::simd is unstable")]
-//pub fn digest_block_simd(msg_0: u32x4,
-//    msg_16: u32x4, msg_32: u32x4, msg_48: u32x4,
-//    hash_abcd: u32x4, hash_e: u32) -> (u32x4, u32) {
-//    if arm::has_sha() {
-//        arm::digest_block_simd(msg_0, msg_16, msg_32, msg_48, hash_abcd, hash_e)
-//    } else {
-//        emu::digest_block_simd(msg_0, msg_16, msg_32, msg_48, hash_abcd, hash_e)
-//    }
-//}
-//
-//
-///// Digest message block in vectors (x86-specific)
-//#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-//#[unstable(feature = "cryptoil", reason = "std::simd is unstable")]
-//pub fn digest_block_simd(msg_0: u32x4,
-//    msg_16: u32x4, msg_32: u32x4, msg_48: u32x4,
-//    hash_abcd: u32x4, hash_e: u32) -> (u32x4, u32) {
-//    if x86::has_sha() {
-//        x86::digest_block_simd(msg_0, msg_16, msg_32, msg_48, hash_abcd, hash_e)
-//    } else {
-//        emu::digest_block_simd(msg_0, msg_16, msg_32, msg_48, hash_abcd, hash_e)
-//    }
-//}
+#[unstable(feature = "default", reason = "1.0.0")]
+pub mod sw;
 
 /// Digest message block in vectors
-//#[cfg(not(any(target_arch = "arm", target_arch = "x86", target_arch = "x86_64")))]
-#[unstable(feature = "cryptoil", reason = "std::simd is unstable")]
-pub fn digest_block_simd(hashw: &mut [u32; 5], msgv: &[u32x4; 4]) {
-    emu::digest_block_simd(hashw, msgv);
+///
+/// This function
+///
+#[stable(feature = "default", since = "1.0.0")]
+pub fn digest_block(hash: &mut [u32; 5], msg: &[u32x4; 4]) {
+    //hw::digest_block(hash, msg);
+    sw::digest_block(hash, msg);
 }
 
 /// Digest message block in bytes
-#[stable(feature = "cryptoil", since = "1.0.0")]
+///
+/// This function
+#[stable(feature = "default", since = "1.0.0")]
 pub fn digest_block_bytes(hash: &mut [u8; 20], msg: &[u8]) {
+    use std::slice::bytes::copy_memory;
+    use super::stdish::slice::transmute_memory;
+    use super::stdish::num::SwapBytesInt;
+    use std::num::Int;
+
     assert_eq!(msg.len(), 64);
-    let mut msgb: [u8; 64] = [0u8; 64];
+    let mut msgb = [0u8; 64];
     copy_memory(&mut msgb, msg);
-    let mut msgv: [u32x4; 4] = [u32x4(0, 0, 0, 0); 4];
+    let mut msgv = [u32x4(0, 0, 0, 0); 4];
     transmute_memory::<[u32x4; 4], [u8; 64]>(&mut msgv, &msgb);
     for m in msgv.iter_mut() { *m = m.to_be() }
-    let mut hashw: [u32; 5] = [0u32; 5];
+    let mut hashw = &mut [0u32; 5];
     transmute_memory::<[u32; 5], [u8; 20]>(&mut hashw, hash);
     for h in hashw.iter_mut() { *h = h.to_be() }
-	digest_block_simd(&mut hashw, &msgv);
+
+    // the crux of the algorithm
+	digest_block(&mut hashw, &msgv);
+
     for h in hashw.iter_mut() { *h = h.to_be() }
     transmute_memory::<[u8; 20], [u32; 5]>(hash, &hashw);
 }
 
-#[unstable(feature = "cryptoil", reason = "will be trait method")]
-#[derive(Copy, Clone, Debug)]
-pub struct Sha1 {
-    pub finished: bool,
-    pub length: usize,
-    state: [u8; 20]
+///// Pad message
+//#[unstable(feature = "default", reason = "1.0.0")]
+//pub fn pad(msg: &[u8], length: usize) -> Vec<u8> {
+//    let newlen = msg.len() + (-msg.len() % 64);
+//    let mut bytes: Vec<u8> = Vec::with_capacity(newlen);
+//    bytes.push_all(msg);
+//    bytes.push(0x80u8);
+//    for _ in 0us..((55 - length) % 64) {
+//        bytes.push(0u8);
+//    }
+//    bytes.write_be_u64(8*length as u64).unwrap();
+//    bytes
+//}
+//
+//fn padding_bad() {
+//    
+//    // move all but last block
+//    println!("{}", buf.to_hex());
+//    let blockslen: usize = buf.len() + 9 + ((55 - buf.len()) % 64);
+//    println!("length = {}", self.length);
+//    println!("buflen = {}", buf.len());
+//    println!("blockslen = {}", blockslen);
+//    let blocksmostlen: usize = blockslen - 64;
+//    println!("blocksmostlen = {}", blocksmostlen);
+//    let mut blocksmost = [0u8; blocksmostlen];
+//    
+//    println!("{}", blocksmost.to_hex());
+//
+//    // copy last block
+//    let mut lengthbuf = [0u8; 4];
+//    let mut blocklast = [0u8; 128];
+//    let blocklastlen: usize = buf.len() - blocksmost.len();
+//    let blocklastoff: usize = blocksmostlen + blocklastlen;
+//    copy_memory(blocklast, &buf[blocksmostlen..blocklastoff]);
+//    blocklast[blocklastoff] = 0x80u8;
+//
+//    copy_memory(blocksmost, &buf[0..buf.len()]);
+//    if buf.len() <= blocksmostlen {
+//        blocksmost
+//    } else {
+//    }
+//
+//    let length: u32 = (8*self.length).to_u32().unwrap().to_be();
+//    transmute_memory::<[u8; 4], u32>(lengthbuf, &length);
+//    copy_memory(&mut blocklast[60..64], lengthbuf);
+//    println!("{}", blocklast.to_hex());
+//
+//    //let mut bytes: Vec<u8> = Vec::with_capacity(newlen);
+//    //bytes.push_all(msg);
+//    //bytes.push(0x80u8);
+//    //for _ in 0us..((55 - length) % 64) {
+//    //    bytes.push(0u8);
+//    //}
+//        //bytes.write_be_u64(8*length as u64).unwrap();
+//        //bytes
+//    
+//}
+
+/// Pad message, 
+pub fn padding(buf: &mut Vec<u8>, msglen: u64) {
+    let buflen = buf.len();
+
+    // `newlen` is always a multiple of the block size (64)
+    let newlen: usize = buflen + 9 + ((55 - buflen) % 64);
+    
+    // standard padding
+    buf.push(0x80u8);
+    buf.resize(newlen - 8, 0u8);
+    buf.write_be_u64(8*msglen).unwrap();
 }
 
-impl Digest<IoError> for Sha1 {}
+/// Reset hash to initial value
+#[unstable(feature = "default", reason = "1.0.0")]
+pub fn reset(hash: &mut [u8; 20]) {
+    use std::slice::bytes::copy_memory;
+    copy_memory(hash, sw::constants::SHA1_H);
+}
 
-#[unstable(feature = "cryptoil", reason = "will be trait method")]
+#[stable(feature = "default", since = "1.0.0")]
+#[derive(Copy, Clone, Debug)]
+pub struct Sha1 {
+
+    #[stable(feature = "default", since = "1.0.0")]
+    pub finished: bool,
+
+    #[stable(feature = "default", since = "1.0.0")]
+    pub length: usize,
+
+    #[stable(feature = "default", since = "1.0.0")]
+    pub state: [u8; 20]
+}
+
+#[stable(feature = "default", since = "1.0.0")]
 impl Sha1 {
+
+    #[stable(feature = "default", since = "1.0.0")]
     pub fn new() -> Sha1 {
         Sha1 {
             finished: false,
@@ -87,73 +151,86 @@ impl Sha1 {
     }
 }
 
-#[unstable(feature = "cryptoil", reason = "std::old_io and std::io are both unstable")]
-impl Read<IoError> for Sha1 {
+impl Hasher for Sha1 {}
+
+impl HashRead for Sha1 {
 
     /// Read a 20-byte message digest
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize, IoError> {
-        //println!("{} in read", self.state.to_hex());
+    #[unstable(feature = "default", reason = "std::old_io and std::io are both unstable")]
+    fn read(&mut self, buf: &mut [u8]) {
+        use std::slice::bytes::copy_memory;
+        
         if buf.len() < 20us {
-            return Err(io_error("Digest read buf must be exactly 20 bytes"))
+            panic!("Digest read buf must be exactly 20 bytes");
         }
         if !self.finished {
-            return Err(io_error("Digest read requires a finished state"))
+            panic!("Digest read requires a finished state");
         }
-        
+
+        // dst <- src
         copy_memory(buf, &self.state);
         
-        Ok(20us)
+        //Ok(20us)
     }
 
     /// Read the message digest
-    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<(), IoError> {
-        //println!("{} in read_to_end", self.state.to_hex());
+    #[unstable(feature = "default", reason = "std::old_io and std::io are both unstable")]
+    fn read_to_end(&mut self, buf: &mut Vec<u8>) {
         buf.resize(20, 0u8);
-        try!(self.read(buf.as_mut_slice()));
-        Ok(())
+        self.read(buf.as_mut_slice());
     }
 }
 
-#[unstable(feature = "cryptoil", reason = "std::old_io and std::io are both unstable")]
-impl Write<IoError> for Sha1 {
+impl HashWrite for Sha1 {
 
     /// Write a 64-byte message block
-    fn write(&mut self, buf: &[u8]) -> Result<usize, IoError> {
-        //println!("{} in write", self.state.to_hex());
+    #[unstable(feature = "default", reason = "std::old_io and std::io are both unstable")]
+    fn write(&mut self, buf: &[u8]) {
+
         if buf.len() < 64us {
-            return Err(io_error("Digest write buf must be exactly 64 bytes"))
+            panic!("Digest write buf must be exactly 64 bytes");
         }
         if self.finished {
-            return Err(io_error("Digest write requires an unfinished state"))
+            panic!("Digest write requires an unfinished state");
         }
 
         digest_block_bytes(&mut self.state, buf);
 
         // the length of the last block doesn't count
-        self.length += 64us;
-        Ok(64us)
+        self.length +=  64us;
+        
+        //Ok(64us)
     }
 
     /// Write a bytestring message
-    fn write_all(&mut self, buf: &[u8]) -> Result<(), IoError> {
-        //println!("{} in write_all", self.state.to_hex());
+    #[unstable(feature = "default", reason = "std::old_io and std::io are both unstable")]
+    fn write_all(&mut self, buf: &[u8]) {
+        
+        // calculate length before pad
         self.length += buf.len();
-        let bytes = emu::pad(buf, self.length);
-        for block in bytes.chunks(64) {
-            try!(self.write(block));
+        let mut padbuf: Vec<u8> = buf.to_vec();
+        padding(&mut padbuf, self.length as u64);
+        let padbuflen = padbuf.len();
+        
+        // write remaining blocks
+        for block in (&padbuf[0..(padbuflen - 64)]).chunks(64) {
+            self.write(block);
         }
+        self.write(&padbuf[(padbuflen - 64)..padbuflen]);
+        
+        // the last block increments the length
+        // so we decrement it to the right value
         self.length -= 64us;
         self.finished = true;
-        Ok(())
     }
 }
 
-#[unstable(feature = "cryptoil", reason = "std::hash::Hasher is unstable")]
 impl Reset for Sha1 {
 
     /// Reset the state to do more digests
+    #[unstable(feature = "default", reason = "std::old_io and std::io are both unstable")]
     fn reset(&mut self) {
-        copy_memory(&mut self.state, emu::SHA1_H);
+        reset(&mut self.state);
 
         // prepare for next time
         self.finished = false;
@@ -161,11 +238,21 @@ impl Reset for Sha1 {
     }
 }
 
-/// Digest whole message, return hex string
-#[unstable(feature = "cryptoil", reason = "will be trait method")]
-pub fn hex_digest(msg: &str) -> String {
-    Sha1::new().hex_digest(msg).unwrap()
-}
+//impl Hasher for Sha1 {
+//    type Output = Vec<u8>;
+//
+//    fn reset(&mut self) {
+//        reset(&mut self.state);
+//
+//        // prepare for next time
+//        self.finished = false;
+//        self.length = 0;
+//    }
+//    
+//    fn finish(&self) -> Vec<u8> {
+//        self.state.to_vec()
+//    }
+//}
 
 #[cfg(test)]
 pub mod tests;

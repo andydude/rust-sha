@@ -1,6 +1,6 @@
 
 //#[inline]
-#[stable]
+#[stable(feature="cryptoil_api", since="1.0.0")]
 pub fn transmute_memory<D: Sized, S: Sized>(dst: &mut D, src: &S) {
     unsafe {
         //let sa = ::std::mem::align_of::<S>();

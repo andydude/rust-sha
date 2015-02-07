@@ -2,11 +2,11 @@
 
 extern crate cryptoil;
 use cryptoil::sha1;
-use cryptoil::stdish::io::Digest;
+use cryptoil::stdish::io::Hasher;
 
 pub fn digest_cmd(command: &str, message: &str) -> String {
     match command {
-        "-sha1" => sha1::Sha1::new().hex_digest(message).unwrap(),
+        "-sha1" => sha1::Sha1::new().hex_digest(message),
         _ => panic!("unknown hash algorithm"),
     }
 }

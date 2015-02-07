@@ -1,22 +1,21 @@
 #![macro_use]
 
-/* Ternary boolean functions
- *
- * the boolean function number is the same as Mathematica.
- * unary and binary functions have been ommitted from this list.
- * for more information on a particular boolean function, see also:
- * http://www.wolframalpha.com/input/?i=BooleanFunction[232,3]
- * where 232 refers to bool3ary_232(a, b, c) in this file.
- *
- * there are 256 possible 3-ary boolean functions, but some of them are boring.
- * there are only 70 3-ary boolean functions which have the property (--half)
- * that half of their inputs yield false and the other half yield true.
- * these functions numbers are given by [A014312] https://oeis.org/A014312
- * 15, 23, 27, 29, 30, 39, 43, 45, 46, 51, 53, 54, 57, 58, 60, 71, 75, 77, 78, 83, 85,
- * 86, 89, 90, 92, 99, 101, 102, 105, 106, 108, 113, 114, 116, 120, 135, 139, 141, 142,
- * 147, 149, 150, 153, 154, 156, 163, 165, 166, 169, 170, 172, 177, 178, 180, 184, 195,
- * 197, 198, 201, 202, 204, 209, 210, 212, 216, 225, 226, 228, 232, 240
- */
+/// Ternary boolean functions
+///
+/// the boolean function number is the same as Mathematica.
+/// unary and binary functions have been ommitted from this list.
+/// for more information on a particular boolean function, see also:
+/// http://www.wolframalpha.com/input/?i=BooleanFunction[232,3]
+/// where 232 refers to bool3ary_232(a, b, c) in this file.
+///
+/// there are 256 possible 3-ary boolean functions, but some of them are boring.
+/// there are only 70 3-ary boolean functions which have the property (--half)
+/// that half of their inputs yield false and the other half yield true.
+/// these functions numbers are given by [A014312] https://oeis.org/A014312
+/// 15, 23, 27, 29, 30, 39, 43, 45, 46, 51, 53, 54, 57, 58, 60, 71, 75, 77, 78, 83, 85,
+/// 86, 89, 90, 92, 99, 101, 102, 105, 106, 108, 113, 114, 116, 120, 135, 139, 141, 142,
+/// 147, 149, 150, 153, 154, 156, 163, 165, 166, 169, 170, 172, 177, 178, 180, 184, 195,
+/// 197, 198, 201, 202, 204, 209, 210, 212, 216, 225, 226, 228, 232, 240
 
 macro_rules! bool3ary_1 { ($a:expr, $b:expr, $c:expr) => (!($a | $b | $c)) }                     	// 3, nor
 macro_rules! bool3ary_2 { ($a:expr, $b:expr, $c:expr) => (!($a | $b | !$c)) }                    	// 3, --mostly-false
