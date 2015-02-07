@@ -874,9 +874,9 @@ pub fn digest_block_good(hashw: &mut [u32; 5], msgv: &[u32x4; 4]) {
 
 #[stable(feature="default", since="1.0.0")]
 pub fn digest_block(hashw: &mut [u32; 5], msgv: &[u32x4; 4]) {
-    digest_block_fast(hashw, msgv);
+    //digest_block_fast(hashw, msgv);
     //digest_block_good(hashw, msgv);
     //arm::digest_block(hashw, msgv);
-    //x86::digest_block(hashw, msgv);
-    //x86::digest_block(hashw, msgv);
+    x86::digest_block(hashw, msgv);
+    //x86asm::digest_block(hashw, msgv);
 }

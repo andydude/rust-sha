@@ -9,6 +9,8 @@ pub mod hw;
 #[unstable(feature = "default", reason = "1.0.0")]
 pub mod sw;
 
+pub mod sw_openssl;
+
 /// Digest message block in vectors
 ///
 /// This function
@@ -23,7 +25,7 @@ pub fn digest_block(hash: &mut [u32; 5], msg: &[u32x4; 4]) {
 ///
 /// This function
 #[stable(feature = "default", since = "1.0.0")]
-pub fn digest_block_bytes(hash: &mut [u8; 20], msg: &[u8]) {
+pub fn digest_block_bytes_sw(hash: &mut [u8; 20], msg: &[u8]) {
     use std::slice::bytes::copy_memory;
     use super::stdish::slice::transmute_memory;
     use super::stdish::num::SwapBytesInt;
@@ -46,63 +48,10 @@ pub fn digest_block_bytes(hash: &mut [u8; 20], msg: &[u8]) {
     transmute_memory::<[u8; 20], [u32; 5]>(hash, &hashw);
 }
 
-///// Pad message
-//#[unstable(feature = "default", reason = "1.0.0")]
-//pub fn pad(msg: &[u8], length: usize) -> Vec<u8> {
-//    let newlen = msg.len() + (-msg.len() % 64);
-//    let mut bytes: Vec<u8> = Vec::with_capacity(newlen);
-//    bytes.push_all(msg);
-//    bytes.push(0x80u8);
-//    for _ in 0us..((55 - length) % 64) {
-//        bytes.push(0u8);
-//    }
-//    bytes.write_be_u64(8*length as u64).unwrap();
-//    bytes
-//}
-//
-//fn padding_bad() {
-//    
-//    // move all but last block
-//    println!("{}", buf.to_hex());
-//    let blockslen: usize = buf.len() + 9 + ((55 - buf.len()) % 64);
-//    println!("length = {}", self.length);
-//    println!("buflen = {}", buf.len());
-//    println!("blockslen = {}", blockslen);
-//    let blocksmostlen: usize = blockslen - 64;
-//    println!("blocksmostlen = {}", blocksmostlen);
-//    let mut blocksmost = [0u8; blocksmostlen];
-//    
-//    println!("{}", blocksmost.to_hex());
-//
-//    // copy last block
-//    let mut lengthbuf = [0u8; 4];
-//    let mut blocklast = [0u8; 128];
-//    let blocklastlen: usize = buf.len() - blocksmost.len();
-//    let blocklastoff: usize = blocksmostlen + blocklastlen;
-//    copy_memory(blocklast, &buf[blocksmostlen..blocklastoff]);
-//    blocklast[blocklastoff] = 0x80u8;
-//
-//    copy_memory(blocksmost, &buf[0..buf.len()]);
-//    if buf.len() <= blocksmostlen {
-//        blocksmost
-//    } else {
-//    }
-//
-//    let length: u32 = (8*self.length).to_u32().unwrap().to_be();
-//    transmute_memory::<[u8; 4], u32>(lengthbuf, &length);
-//    copy_memory(&mut blocklast[60..64], lengthbuf);
-//    println!("{}", blocklast.to_hex());
-//
-//    //let mut bytes: Vec<u8> = Vec::with_capacity(newlen);
-//    //bytes.push_all(msg);
-//    //bytes.push(0x80u8);
-//    //for _ in 0us..((55 - length) % 64) {
-//    //    bytes.push(0u8);
-//    //}
-//        //bytes.write_be_u64(8*length as u64).unwrap();
-//        //bytes
-//    
-//}
+pub fn digest_block_bytes(hash: &mut [u8; 20], msg: &[u8]) {
+    let hashs: &mut [u8] = hash;
+    sw_openssl::digest_block_bytes(hashs, msg);
+}
 
 /// Pad message, 
 pub fn padding(buf: &mut Vec<u8>, msglen: u64) {
