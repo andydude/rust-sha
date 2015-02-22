@@ -14,6 +14,9 @@ cryptoil_internals = []
 [dependencies.rustc-serialize]
 git = "https://github.com/rust-lang/rustc-serialize"
 
+[dependencies.endian]
+git = "https://github.com/andydude/rust-endian"
+
 [lib]
 name = "cryptoil"
 # default path = "src/lib.rs"

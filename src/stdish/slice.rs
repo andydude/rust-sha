@@ -1,15 +1,41 @@
 
 //#[inline]
 #[stable(feature="cryptoil_api", since="1.0.0")]
-pub fn transmute_memory<D: Sized, S: Sized>(dst: &mut D, src: &S) {
+pub fn as_transmute<D: Sized, S: Sized>(src: &mut S) -> &mut D {
+    unsafe {
+        let size = ::std::mem::size_of::<S>();
+        assert_eq!(::std::mem::size_of::<D>(), size);
+        ::std::mem::transmute::<&mut S, &mut D>(src)
+    }
+}
+
+//#[inline]
+#[stable(feature="cryptoil_api", since="1.0.0")]
+pub fn transmute_memory<D: Sized, S: Sized>(mut dst: &mut D, mut src: &mut S) {
     unsafe {
         //let sa = ::std::mem::align_of::<S>();
         //let da = ::std::mem::align_of::<D>();
         //println!("d:{} == s:{}", da, sa);
         let size = ::std::mem::size_of::<S>();
         assert_eq!(::std::mem::size_of::<D>(), size);
-        let d = ::std::mem::transmute::<(&mut D, usize), &mut [u8]>((dst, size));
+        let mut t = ::std::mem::transmute::<(&mut S, usize), &mut [u8]>((src, size));
+        let (mut r, mut z) = ::std::mem::transmute::<&mut [u8], (&mut D, usize)>(t);
+        //::std::slice::bytes::copy_memory(d, s);
+        //*dst = *r;
+    }
+}
+
+//#[inline]
+#[stable(feature="cryptoil_api", since="1.0.0")]
+pub fn transmute_copy_memory<D: Sized, S: Sized>(dst: &mut D, src: &S) {
+    unsafe {
+        //let sa = ::std::mem::align_of::<S>();
+        //let da = ::std::mem::align_of::<D>();
+        //println!("d:{} == s:{}", da, sa);
+        let size = ::std::mem::size_of::<S>();
+        assert_eq!(::std::mem::size_of::<D>(), size);
         let s = ::std::mem::transmute::<(&S, usize), &[u8]>((src, size));
+        let d = ::std::mem::transmute::<(&mut D, usize), &mut [u8]>((dst, size));
         ::std::slice::bytes::copy_memory(d, s);
     }
 }
