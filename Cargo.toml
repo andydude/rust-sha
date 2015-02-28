@@ -17,6 +17,9 @@ git = "https://github.com/rust-lang/rustc-serialize"
 [dependencies.endian]
 git = "https://github.com/andydude/rust-endian"
 
+[dependencies.bswap]
+git = "https://github.com/andydude/rust-bswap"
+
 [lib]
 name = "cryptoil"
 # default path = "src/lib.rs"

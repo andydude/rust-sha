@@ -1,0 +1,31 @@
+        // Rounds 0..64
+        unsafe {
+        sha256_digest_round_x4(s, w.offset(60), &kons.offset(60));
+        sha256_digest_round_x4(s, w.offset(56), &kons.offset(56));
+        sha256_digest_round_x4(s, w.offset(52), &kons.offset(52));
+        sha256_digest_round_x4(s, w.offset(48), &kons.offset(48));
+        sha256_schedule_x4(w.offset(44));
+        sha256_digest_round_x4(s, w.offset(44..48], &kons.offset(44));
+        sha256_schedule_x4(w.offset(40..60]);
+        sha256_digest_round_x4(s, w.offset(40..44], &kons.offset(40));
+        sha256_schedule_x4(w.offset(36..56]);
+        sha256_digest_round_x4(s, w.offset(36..40], &kons.offset(36));
+        sha256_schedule_x4(w.offset(32..52]);
+        sha256_digest_round_x4(s, w.offset(32..36], &kons.offset(32));
+        sha256_schedule_x4(w.offset(28..48]);
+        sha256_digest_round_x4(s, w.offset(28..32], &kons.offset(28));
+        sha256_schedule_x4(w.offset(24..44]);
+        sha256_digest_round_x4(s, w.offset(24..28], &kons.offset(24));
+        sha256_schedule_x4(w.offset(20..40]);
+        sha256_digest_round_x4(s, w.offset(20..24], &kons.offset(20));
+        sha256_schedule_x4(w.offset(16..36]);
+        sha256_digest_round_x4(s, w.offset(16..20], &kons.offset(16));
+        sha256_schedule_x4(w.offset(12..32]);
+        sha256_digest_round_x4(s, w.offset(12..16], &kons.offset(12));
+        sha256_schedule_x4(w.offset(8..28]);
+        sha256_digest_round_x4(s, w.offset(8..12], &kons.offset(8..12]);
+        sha256_schedule_x4(w.offset(4..24]);
+        sha256_digest_round_x4(s, w.offset(4..8], &kons.offset(4..8]);
+        sha256_schedule_x4(w.offset(0..20]);
+            sha256_digest_round_x4(s, w.offset(0..4], &kons.offset(0..4]);
+            }
