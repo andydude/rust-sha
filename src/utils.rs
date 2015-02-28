@@ -68,7 +68,7 @@ pub fn std_pad_len(len: usize, reqlen: usize) -> usize {
 
 pub fn std_pad(len: usize) -> Vec<u8> {
     use bswap::beu64;
-    use serialize::hex::ToHex;
+    //use serialize::hex::ToHex;
     let mut v: Vec<u8> = Vec::new();
     v.push(0x80);
     v.resize(std_pad_len(len, 9) + 1, 0);
@@ -146,3 +146,4 @@ impl <T: Copy + Sized, F: FnMut(&[T]) -> T> Iterator for
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) { (0, None) }
 }
+

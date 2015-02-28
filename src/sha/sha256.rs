@@ -1,3 +1,4 @@
+
 /// Please fix std::simd::u32x4
 #[simd]
 #[repr(C)]
@@ -139,17 +140,13 @@ pub mod consts {
 }
 
 pub mod ops {
-    use std::num::Int;
     use bswap::beu32;
+    use std::num::Int;
+    use std::iter::{Unfold, IteratorExt};
     use utils::std_pad;
     use super::Sha256State;
     use super::u32x4;
 
-    #[inline]
-    fn to_simd(a: &[u32]) -> u32x4 {
-        u32x4(a[3], a[2], a[1], a[0])
-    }
-        
     #[inline]
     fn swap(v0: u32x4) -> u32x4 {
         u32x4(v0.2, v0.3, v0.0, v0.1)
@@ -195,7 +192,7 @@ pub mod ops {
     /// Combines the SHA-256 message schedule intrinsics into one function.
     #[inline]
     pub fn expand_round_x4(work: &[u32x4]) -> u32x4 {
-        println!("expand_round_x4()");
+        //println!("expand_round_x4()");
         expand_step2(expand_step1(work[0], work[1]) + load(work[2], work[3]), work[3])
     }
 
@@ -218,7 +215,7 @@ pub mod ops {
             ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
         }
 
-        println!("{:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x}", a, b, c, d, e, f, g, h);
+        //println!("{:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x}", a, b, c, d, e, f, g, h);
         
         // 2 rounds
         h += big_sigma1!(e) + bool3ary_202!(e, f, g) + wk0; d += h;
@@ -232,7 +229,7 @@ pub mod ops {
     /// Performs 4 digest rounds.
     #[inline]
     pub fn digest_round_x4(state: (u32x4, u32x4), work: u32x4) -> (u32x4, u32x4) {
-        println!("digest_round_x4()");
+        //println!("digest_round_x4()");
         let (mut cdgh, mut abef) = state;
         
         // 4 rounds
@@ -242,6 +239,26 @@ pub mod ops {
         (cdgh, abef)
     }
 
+    #[inline]
+    fn expand_copy(work: &mut [u32x4; 4], buf: &[u8]) {
+        for (i, chunk) in buf.chunks(16).enumerate() {
+            work[i] = u32x4(beu32::decode(&chunk[12..16]),
+                            beu32::decode(&chunk[8..12]),
+                            beu32::decode(&chunk[4..8]),
+                            beu32::decode(&chunk[..4]));
+        }
+    }
+    
+    #[inline]
+    fn expand_next(work: &mut [u32x4; 4]) -> Option<u32x4> {
+        let item = expand_round_x4(&work[..]);
+        work[0] = work[1];
+        work[1] = work[2];
+        work[2] = work[3];
+        work[3] = item;
+        Some(work[3])
+    }
+    
     /// Process a block with the SHA-2 SHA-256 algorithm.
     ///
     /// Internally, this uses functions which resemble the new Intel SHA instruction sets,
@@ -249,28 +266,22 @@ pub mod ops {
     /// the most from this implementation, replace these functions with x86 intrinsics to
     /// get a possible speed boost.
     pub fn digest_block(state: Sha256State, buf: &[u8]) -> Sha256State {
-        use utils::RecurrenceExt;
+        use super::consts::K_U32X4;
         assert_eq!(buf.len(), 64);
+        let mut work = [u32x4(0, 0, 0, 0); 4];
+        expand_copy(&mut work, buf);
         
-        let state2 = buf
-            
-            // Decode the buffer into big-endian words.
-            .chunks(4).map(beu32::decode).collect::<Vec<u32>>()
-            
-            // Group each 4-tuple of u32s into a SIMD vector.
-            .chunks(4).map(to_simd).collect::<Vec<u32x4>>()
-            
-            // Chain a recurrence relation for message schedule.
-            .chain_recurrence_map(expand_round_x4)
-            
-            // Add SHA-256 round constants to message schedule.
-            .zip(super::consts::K_U32X4.to_vec().into_iter())
-            
-            // This is what Python calls a StarMap.
-            .map(|a: (u32x4, u32x4)| { a.0 + a.1 }).take(16)
+        // Decode message.
+        let state2 = work.iter().cloned()
+
+            // Expand message schedule.
+            .chain(Unfold::new(work, |work: &mut [u32x4; 4]| expand_next(work)))
+
+            // Add SHA-256 round constants.
+            .enumerate().map(|(i, work): (usize, u32x4)| K_U32X4[i] + work)
             
             // Perform 64 digest rounds.
-            .fold(state, digest_round_x4);
+            .take(16).fold(state, digest_round_x4);
 
         // Accumulate state
         (state.0 + state2.0,
@@ -279,15 +290,13 @@ pub mod ops {
 
     pub fn digest(buf: &[u8]) -> Sha256State {
         let pad = std_pad(buf.len());
+        
 	    buf
             // Pad the message to a multiple of 64 bytes
-            .to_vec().into_iter().chain(pad.into_iter())
-
-            // Split the message into blocks.
-            .collect::<Vec<u8>>().chunks(64)
+            .iter().cloned().chain(pad.into_iter()).collect::<Vec<u8>>()
             
             // Digest these blocks of 64 bytes.
-            .fold(super::consts::H_U32X4, digest_block)
+            .chunks(64).fold(super::consts::H_U32X4, digest_block)
     }
 }
 
