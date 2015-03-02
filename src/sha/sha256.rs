@@ -5,27 +5,15 @@
 #[derive(Copy, Clone, Debug)]
 pub struct u32x4(u32, u32, u32, u32);
 
-/// The `Sha256State` private backend to a SHA-1 message digest algorithm.
-pub type Sha256State = (u32x4, u32x4);
-
 /// The `Sha256` public frontend to a SHA-1 message digest algorithm.
 #[derive(Clone, Debug)]
-pub struct Sha256(Sha256State, Vec<u8>);
+pub struct Sha256([u32; 8], Vec<u8>);
 
 impl Sha256 {
     
-    pub fn from_state(state: &[u32; 8]) -> Sha256 {
-        let [a, b, c, d, e, f, g, h] = *state;
-        
-        Sha256((u32x4(c, d, g, h),
-                u32x4(a, b, e, f)), Vec::new())
-    }
-    
-    pub fn to_state(&self) -> [u32; 8] {
-        let (u32x4(c, d, g, h),
-             u32x4(a, b, e, f)) = self.0;
-        
-        [a, b, c, d, e, f, g, h]
+    /// Construct a `Sha256` object with the given state.
+    pub fn new(state: &[u32; 8]) -> Sha256 {
+        Sha256(*state, Vec::new())
     }
 }
 
@@ -142,9 +130,9 @@ pub mod consts {
 pub mod ops {
     use bswap::beu32;
     use std::num::Int;
+    use std::io::prelude::*;
     use std::iter::{Unfold, IteratorExt};
-    use utils::std_pad;
-    use super::Sha256State;
+    use utils::StdPad;
     use super::u32x4;
 
     #[inline]
@@ -161,38 +149,36 @@ pub mod ops {
     #[inline]
     pub fn expand_step1(v0: u32x4, v1: u32x4) -> u32x4 {
         
-        #[inline]
-        fn sigma0x4(a: u32x4) -> u32x4 {
-            ((a >> u32x4( 7,  7,  7,  7)) | (a << u32x4(25, 25, 25, 25))) ^
-            ((a >> u32x4(18, 18, 18, 18)) | (a << u32x4(14, 14, 14, 14))) ^
-             (a >> u32x4( 3,  3,  3,  3))
+        macro_rules! sigma0x4 {
+            ($a:expr) => 
+            (((($a >> u32x4( 7,  7,  7,  7)) | ($a << u32x4(25, 25, 25, 25))) ^
+              (($a >> u32x4(18, 18, 18, 18)) | ($a << u32x4(14, 14, 14, 14))) ^
+               ($a >> u32x4( 3,  3,  3,  3))))
         }
         
-        v0 + sigma0x4(load(v0, v1))
+        v0 + sigma0x4!(load(v0, v1))
     }
 
     /// Emulates `llvm.x86.sha256msg2` intrinsic.
     #[inline]
     pub fn expand_step2(v4: u32x4, v3: u32x4) -> u32x4 {
         
-        #[inline]
-        fn sigma1(a: u32) -> u32 {
-            a.rotate_right(17) ^ a.rotate_right(19) ^ (a >> 10)
+        macro_rules! sigma1 {
+            ($a:expr) => (($a.rotate_right(17) ^ $a.rotate_right(19) ^ ($a >> 10)))
         }
         
         let u32x4(x3, x2, x1, x0) = v4;
         let u32x4(w15, w14, _, _) = v3;
-        let w16 = x0 + sigma1(w14);
-        let w17 = x1 + sigma1(w15);
-        let w18 = x2 + sigma1(w16);
-        let w19 = x3 + sigma1(w17);
+        let w16 = x0 + sigma1!(w14);
+        let w17 = x1 + sigma1!(w15);
+        let w18 = x2 + sigma1!(w16);
+        let w19 = x3 + sigma1!(w17);
         u32x4(w19, w18, w17, w16)
     }
 
     /// Combines the SHA-256 message schedule intrinsics into one function.
     #[inline]
     pub fn expand_round_x4(work: &[u32x4]) -> u32x4 {
-        //println!("expand_round_x4()");
         expand_step2(expand_step1(work[0], work[1]) + load(work[2], work[3]), work[3])
     }
 
@@ -214,8 +200,6 @@ pub mod ops {
         macro_rules! bool3ary_232 {
             ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
         }
-
-        //println!("{:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x}", a, b, c, d, e, f, g, h);
         
         // 2 rounds
         h += big_sigma1!(e) + bool3ary_202!(e, f, g) + wk0; d += h;
@@ -229,7 +213,6 @@ pub mod ops {
     /// Performs 4 digest rounds.
     #[inline]
     pub fn digest_round_x4(state: (u32x4, u32x4), work: u32x4) -> (u32x4, u32x4) {
-        //println!("digest_round_x4()");
         let (mut cdgh, mut abef) = state;
         
         // 4 rounds
@@ -250,13 +233,13 @@ pub mod ops {
     }
     
     #[inline]
-    fn expand_next(work: &mut [u32x4; 4]) -> Option<u32x4> {
+    fn expand_next(work: &mut [u32x4; 4]) -> u32x4 {
         let item = expand_round_x4(&work[..]);
         work[0] = work[1];
         work[1] = work[2];
         work[2] = work[3];
         work[3] = item;
-        Some(work[3])
+        work[3]
     }
     
     /// Process a block with the SHA-2 SHA-256 algorithm.
@@ -265,17 +248,17 @@ pub mod ops {
     /// and so it's data locality properties may improve performance. However, to benefit
     /// the most from this implementation, replace these functions with x86 intrinsics to
     /// get a possible speed boost.
-    pub fn digest_block(state: Sha256State, buf: &[u8]) -> Sha256State {
+    pub fn digest_block_u32x4(state: (u32x4, u32x4), buf: &[u8]) -> (u32x4, u32x4) {
         use super::consts::K_U32X4;
         assert_eq!(buf.len(), 64);
         let mut work = [u32x4(0, 0, 0, 0); 4];
         expand_copy(&mut work, buf);
         
-        // Decode message.
+        // Decode message buffer.
         let state2 = work.iter().cloned()
 
             // Expand message schedule.
-            .chain(Unfold::new(work, |work: &mut [u32x4; 4]| expand_next(work)))
+            .chain(Unfold::new(work, |w: &mut [u32x4; 4]| Some(expand_next(w))))
 
             // Add SHA-256 round constants.
             .enumerate().map(|(i, work): (usize, u32x4)| K_U32X4[i] + work)
@@ -287,16 +270,41 @@ pub mod ops {
         (state.0 + state2.0,
          state.1 + state2.1)
     }
-
-    pub fn digest(buf: &[u8]) -> Sha256State {
-        let pad = std_pad(buf.len());
+    
+    pub fn digest_block_u32(state: [u32; 8], buf: &[u8]) -> [u32; 8] {
+        let [a, b, c, d, e, f, g, h] = state;
+        let mut state4 = (u32x4(c, d, g, h), u32x4(a, b, e, f));
+        state4 = digest_block_u32x4(state4, buf);
+        let (u32x4(c, d, g, h), u32x4(a, b, e, f)) = state4;
+        [a, b, c, d, e, f, g, h]
+    }
+    
+    pub fn digest_u32x4(buf: &[u8]) -> (u32x4, u32x4) {
+        let mut pad_buf = [0u8; 128];
+        let pad_len = StdPad::new(buf.len())
+            .read(&mut pad_buf[..]).unwrap();
+        let pad = &pad_buf[..pad_len];
         
 	    buf
             // Pad the message to a multiple of 64 bytes
-            .iter().cloned().chain(pad.into_iter()).collect::<Vec<u8>>()
+            .iter().cloned().chain(pad.iter().cloned()).collect::<Vec<u8>>()
             
             // Digest these blocks of 64 bytes.
-            .chunks(64).fold(super::consts::H_U32X4, digest_block)
+            .chunks(64).fold(super::consts::H_U32X4, digest_block_u32x4)
+    }
+    
+    pub fn digest_u32(buf: &[u8]) -> [u32; 8] {
+        let mut pad_buf = [0u8; 128];
+        let pad_len = StdPad::new(buf.len())
+            .read(&mut pad_buf[..]).unwrap();
+        let pad = &pad_buf[..pad_len];
+        
+	    buf
+            // Pad the message to a multiple of 64 bytes
+            .iter().cloned().chain(pad.iter().cloned()).collect::<Vec<u8>>()
+            
+            // Digest these blocks of 64 bytes.
+            .chunks(64).fold(super::consts::H, digest_block_u32)
     }
 }
 
@@ -308,7 +316,7 @@ pub mod impls {
     use std::io;
     use bswap::beu32;
     use serialize::hex::ToHex;
-    use utils::Reset;
+    use utils::{Reset, Digest, DigestExt};
     use super::ops;
     use super::{
         Sha256,
@@ -318,7 +326,7 @@ pub mod impls {
 
         /// Construct a default `Sha256` object.
         fn default() -> Sha256 {
-            Sha256::from_state(&super::consts::H)
+            Sha256::new(&super::consts::H)
         }
     }
 
@@ -326,7 +334,7 @@ pub mod impls {
 
         /// Reset the state
         fn reset(&mut self) {
-            let state = super::consts::H_U32X4;
+            let state = super::consts::H;
             self.0 = state;
         }
     }
@@ -335,22 +343,21 @@ pub mod impls {
 
         /// Read state as big-endian
         fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-            let state = self.to_state();
-            beu32::encode_slice(buf, &state[..]);
+            beu32::encode_slice(buf, &self.0[..]);
             Ok(buf.len())
         }
     }
 
     impl Write for Sha256 {
         
-        /// Write to buffer
+        /// Write to the buffer
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
             Write::write(&mut self.1, buf)
         }
         
-        /// Digest buffer
+        /// Digest the buffer
         fn flush(&mut self) -> io::Result<()> {
-            self.0 = ops::digest(&self.1[..]);
+            self.0 = ops::digest_u32(&self.1[..]);
             Ok(())
         }
     }
@@ -359,9 +366,8 @@ pub mod impls {
 
         /// Get the first 8 bytes of the state
         fn finish(&self) -> u64 {
-            let state = self.to_state();
-            ((state[0] as u64) << 32u64) |
-             (state[1] as u64)
+            ((self.0[0] as u64) << 32u64) |
+             (self.0[1] as u64)
         }
 
         /// Write to buffer
@@ -371,11 +377,9 @@ pub mod impls {
     }
     
     impl IntoBytes for Sha256 {
-        fn into_bytes(self) -> Vec<u8> {
-            let state = self.to_state();
-            let mut h = Sha256::from_state(&state);
+        fn into_bytes(mut self) -> Vec<u8> {
             let mut bytes = vec![0u8; 32];
-            h.read(&mut bytes[..]).unwrap();
+            (&mut self).read(&mut bytes[..]).unwrap();
             bytes
         }
     }
@@ -383,6 +387,13 @@ pub mod impls {
     impl ToHex for Sha256 {
         fn to_hex(&self) -> String {
             self.clone().into_bytes().as_slice().to_hex()
+        }
+    }
+
+    impl Digest for Sha256 {}
+    impl DigestExt for Sha256 {
+        fn default_len() -> usize {
+            32
         }
     }
 }
@@ -401,17 +412,15 @@ pub mod tests {
 
     /// Simplify state parameter
     pub fn digest_block(state: &mut [u32; 8], buf: &[u8]) {
-        let mut h = Sha256::from_state(state);
-        h.0 = super::ops::digest_block(h.0, buf);
-        *state = h.to_state();
+        *state = super::ops::digest_block_u32(*state, buf);
     }
     
     /// Simplify state parameter
     pub fn digest(state: &mut [u32; 8], buf: &[u8]) -> Sha256 {
-        let mut h = Sha256::from_state(state);
+        let mut h = Sha256::new(state);
         Write::write_all(&mut h, buf).unwrap();
         Write::flush(&mut h).unwrap();
-        *state = h.to_state();
+        *state = h.0;
         h
     }
 
