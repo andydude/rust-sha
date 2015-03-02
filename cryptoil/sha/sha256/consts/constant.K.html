@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `K` constant in crate `cryptoil`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, K">
+
+    <title>cryptoil::sha::sha256::consts::K - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../../../index.html'>cryptoil</a>::<wbr><a href='../../index.html'>sha</a>::<wbr><a href='../index.html'>sha256</a>::<wbr><a href='index.html'>consts</a></p>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content constant">
+<h1 class='fqn'><span class='in-band'><a href='../../../index.html'>cryptoil</a>::<wbr><a href='../../index.html'>sha</a>::<wbr><a href='../index.html'>sha256</a>::<wbr><a href='index.html'>consts</a>::<wbr><a class='constant' href=''>K</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-658' href='../../../../src/cryptoil/sha/sha256.rs.html#42-107'>[src]</a></span></h1>
+<pre class='rust const'>pub const K: <a href='http://doc.rust-lang.org/nightly/std/primitive.slice.html'>[<a href='http://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>; 64]</a><code> = </code><code>[
+        0x428a2f98, // floor(mod(cbrt(2), 1)*2**32)
+        0x71374491, // floor(mod(cbrt(3), 1)*2**32)
+        0xb5c0fbcf, // floor(mod(cbrt(5), 1)*2**32)
+        0xe9b5dba5, // floor(mod(cbrt(7), 1)*2**32)
+        0x3956c25b, // floor(mod(cbrt(11), 1)*2**32)
+        0x59f111f1, // floor(mod(cbrt(13), 1)*2**32)
+        0x923f82a4, // floor(mod(cbrt(17), 1)*2**32)
+        0xab1c5ed5, // floor(mod(cbrt(19), 1)*2**32)
+        0xd807aa98, // floor(mod(cbrt(23), 1)*2**32)
+        0x12835b01, // floor(mod(cbrt(29), 1)*2**32)
+        0x243185be, // floor(mod(cbrt(31), 1)*2**32)
+        0x550c7dc3, // floor(mod(cbrt(37), 1)*2**32)
+        0x72be5d74, // floor(mod(cbrt(41), 1)*2**32)
+        0x80deb1fe, // floor(mod(cbrt(43), 1)*2**32)
+        0x9bdc06a7, // floor(mod(cbrt(47), 1)*2**32)
+        0xc19bf174, // floor(mod(cbrt(53), 1)*2**32)
+        0xe49b69c1, // floor(mod(cbrt(59), 1)*2**32)
+        0xefbe4786, // floor(mod(cbrt(61), 1)*2**32)
+        0x0fc19dc6, // floor(mod(cbrt(67), 1)*2**32)
+        0x240ca1cc, // floor(mod(cbrt(71), 1)*2**32)
+        0x2de92c6f, // floor(mod(cbrt(73), 1)*2**32)
+        0x4a7484aa, // floor(mod(cbrt(79), 1)*2**32)
+        0x5cb0a9dc, // floor(mod(cbrt(83), 1)*2**32)
+        0x76f988da, // floor(mod(cbrt(89), 1)*2**32)
+        0x983e5152, // floor(mod(cbrt(97), 1)*2**32)
+        0xa831c66d, // floor(mod(cbrt(101), 1)*2**32)
+        0xb00327c8, // floor(mod(cbrt(103), 1)*2**32)
+        0xbf597fc7, // floor(mod(cbrt(107), 1)*2**32)
+        0xc6e00bf3, // floor(mod(cbrt(109), 1)*2**32)
+        0xd5a79147, // floor(mod(cbrt(113), 1)*2**32)
+        0x06ca6351, // floor(mod(cbrt(127), 1)*2**32)
+        0x14292967, // floor(mod(cbrt(131), 1)*2**32)
+        0x27b70a85, // floor(mod(cbrt(137), 1)*2**32)
+        0x2e1b2138, // floor(mod(cbrt(139), 1)*2**32)
+        0x4d2c6dfc, // floor(mod(cbrt(149), 1)*2**32)
+        0x53380d13, // floor(mod(cbrt(151), 1)*2**32)
+        0x650a7354, // floor(mod(cbrt(157), 1)*2**32)
+        0x766a0abb, // floor(mod(cbrt(163), 1)*2**32)
+        0x81c2c92e, // floor(mod(cbrt(167), 1)*2**32)
+        0x92722c85, // floor(mod(cbrt(173), 1)*2**32)
+        0xa2bfe8a1, // floor(mod(cbrt(179), 1)*2**32)
+        0xa81a664b, // floor(mod(cbrt(181), 1)*2**32)
+        0xc24b8b70, // floor(mod(cbrt(191), 1)*2**32)
+        0xc76c51a3, // floor(mod(cbrt(193), 1)*2**32)
+        0xd192e819, // floor(mod(cbrt(197), 1)*2**32)
+        0xd6990624, // floor(mod(cbrt(199), 1)*2**32)
+        0xf40e3585, // floor(mod(cbrt(211), 1)*2**32)
+        0x106aa070, // floor(mod(cbrt(223), 1)*2**32)
+        0x19a4c116, // floor(mod(cbrt(227), 1)*2**32)
+        0x1e376c08, // floor(mod(cbrt(229), 1)*2**32)
+        0x2748774c, // floor(mod(cbrt(233), 1)*2**32)
+        0x34b0bcb5, // floor(mod(cbrt(239), 1)*2**32)
+        0x391c0cb3, // floor(mod(cbrt(241), 1)*2**32)
+        0x4ed8aa4a, // floor(mod(cbrt(251), 1)*2**32)
+        0x5b9cca4f, // floor(mod(cbrt(257), 1)*2**32)
+        0x682e6ff3, // floor(mod(cbrt(263), 1)*2**32)
+        0x748f82ee, // floor(mod(cbrt(269), 1)*2**32)
+        0x78a5636f, // floor(mod(cbrt(271), 1)*2**32)
+        0x84c87814, // floor(mod(cbrt(277), 1)*2**32)
+        0x8cc70208, // floor(mod(cbrt(281), 1)*2**32)
+        0x90befffa, // floor(mod(cbrt(283), 1)*2**32)
+        0xa4506ceb, // floor(mod(cbrt(293), 1)*2**32)
+        0xbef9a3f7, // floor(mod(cbrt(307), 1)*2**32)
+        0xc67178f2, // floor(mod(cbrt(311), 1)*2**32)
+    ]</code></pre></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "cryptoil";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../../jquery.js"></script>
+    <script src="../../../../main.js"></script>
+    
+    <script async src="../../../../search-index.js"></script>
+</body>
+</html>
