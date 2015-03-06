@@ -306,7 +306,7 @@ pub mod tests {
     //}
     //
     ///// Digest whole message, return hex string
-    //#[unstable(feature = "cryptoil_internal", reason = "will be trait method")]
+    //#[unstable(feature = "sha_internals", reason = "will be trait method")]
     //pub fn digest_to_hex(msg: &str) -> String {
     //    let mut hash = [0u8; 20];
     //    super::digest(&mut hash[0..20], msg.as_bytes());

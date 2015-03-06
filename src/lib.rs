@@ -12,7 +12,7 @@ extern crate bswap;
 #[stable(feature = "default", since = "1.0.0")]
 pub mod logic;
 
-#[unstable(feature = "cryptoil_internals", reason = "1.0.0")]
+#[unstable(feature = "sha_internals", reason = "1.0.0")]
 pub mod utils;
 
 #[stable(feature = "default", since = "1.0.0")]
