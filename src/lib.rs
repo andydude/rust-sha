@@ -16,4 +16,10 @@ pub mod logic;
 pub mod utils;
 
 #[stable(feature = "default", since = "1.0.0")]
-pub mod sha;
+pub mod sha1;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha256;
+
+//#[stable(feature = "default", since = "1.0.0")]
+//pub mod sha512;
