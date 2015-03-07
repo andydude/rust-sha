@@ -1,18 +1,21 @@
 /// TODO: docs
 #[derive(Clone)]
-pub struct Sha1([u32; 5], Vec<u8>);
+pub struct Sha1(pub [u32; 5], Vec<u8>);
 
+/// TODO: docs
 pub mod impls {
     use std::default::Default;
-    use std::ffi::IntoBytes;
     use std::hash::Hasher;
     use std::io::prelude::*;
     use std::io;
-    use bswap::beu32;
-    use serialize::hex::ToHex;
-    use utils::{Reset, Digest, DigestExt};
+    use bswap::{beu32, beu64};
     use super::Sha1;
-    
+    use utils::{Reset,
+                Digest,
+                DigestExt,
+                ReadPadBlocksExt,
+                StdPad};
+
     impl Default for Sha1 {
 
         /// Construct a default `Sha1` object.
@@ -23,76 +26,81 @@ pub mod impls {
 
     impl Reset for Sha1 {
 
-        /// Reset the state
+        /// (Step 0) Reset the state
         fn reset(&mut self) {
-            let state = super::consts::H;
+            self.0 = super::consts::H;
+            self.1.clear();
+        }
+    }
+
+    impl Write for Sha1 {
+
+        /// (Step 1) Write to buffer
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            Write::write(&mut self.1, buf)
+        }
+
+        /// Digest buffer
+        fn flush(&mut self) -> io::Result<()> {
+            let mut state = self.0;
+            let ref buf = self.1;
+            
+            fn pad(len: usize) -> StdPad {
+                let mut suffix = vec![0u8; 8];
+                beu64::encode(&mut suffix[..], 8*len as u64);
+                StdPad::new(suffix, 64)
+            }
+
+            for block in buf.pad_blocks(64, |len: usize| pad(len)) {
+                super::ops::digest_block(&mut state, &block);
+            }
+            
             self.0 = state;
+            Ok(())
         }
     }
 
     impl Read for Sha1 {
 
-        /// Read state as big-endian
+        /// (Step 4) Read state as big-endian
+        ///
+        /// The buffer length must be a multiple of 4.
         fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-            beu32::encode_slice(buf, &self.0[..]);
+            let state_buf = &self.0[..buf.len()/4];
+            beu32::encode_slice(buf, state_buf);
             Ok(buf.len())
         }
     }
 
-    impl Write for Sha1 {
-        
-        /// Write to buffer
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            Write::write(&mut self.1, buf)
-        }
-        
-        /// Digest buffer
-        fn flush(&mut self) -> io::Result<()> {
-            self.0 = super::ops::digest(&self.1[..]);
-            Ok(())
-        }
-    }
-    
     impl Hasher for Sha1 {
-
+    
         /// Get the first 8 bytes of the state
         fn finish(&self) -> u64 {
-            let state = self.0;
+            let mut h = self.clone();
+            h.flush().unwrap();
+            let state = h.0;
+            
             ((state[0] as u64) << 32u64) |
              (state[1] as u64)
         }
-
+    
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) {
             Write::write(self, buf).unwrap();
         }
     }
-    
-    impl IntoBytes for Sha1 {
-        fn into_bytes(mut self) -> Vec<u8> {
-            let mut bytes = vec![0u8; 20];
-            (&mut self).read(&mut bytes[..]).unwrap();
-            bytes
-        }
-    }
-    
-    impl ToHex for Sha1 {
-        fn to_hex(&self) -> String {
-            self.clone().into_bytes().as_slice().to_hex()
-        }
-    }
 
     impl Digest for Sha1 {}
-    
+
     impl DigestExt for Sha1 {
-        fn default_len() -> usize {
+            fn default_len() -> usize {
             return 20;
         }
     }
 }
 
 /// TODO
-#[unstable(feature="default", reason="1.0.0")]
+#[unstable(feature="default", reason="TODO")]
 pub mod consts {
 
     /// TODO
@@ -102,7 +110,7 @@ pub mod consts {
         0x98badcfe,
         0x10325476,
         0xc3d2e1f0];
-    
+
     /// TODO
     pub const K: [u32; 4] = [
         0x5a827999,
@@ -111,12 +119,10 @@ pub mod consts {
         0xca62c1d6];
 }
 
+/// TODO: docs
 pub mod ops {
-    use std::io::prelude::*;
     use bswap::beu32;
-    use utils::StdPad;
-    use super::consts::{H, K};
-    
+
     macro_rules! rotate_left {
         ($a:expr, $b:expr) => (($a << $b) ^ ($a >> (32 - $b)))
     }
@@ -147,7 +153,7 @@ pub mod ops {
                     ^ $work[($t + 4 + 2) % 20]
                     ^ $work[($t + 4 + 8) % 20]
                     ^ $work[($t + 4 + 13) % 20];
-                
+
                 $work[($t + 0) % 20] = rotate_left!(temp, 1);
             }
         }
@@ -161,20 +167,25 @@ pub mod ops {
                     .wrapping_add($w)
                     .wrapping_add(rotate_left!($a, 5))
                     .wrapping_add(round_func!($b, $c, $d, $i));
-                
+
                 $b = rotate_left!($b, 30);
             }
         }
     }
+    
+    /// Macro expand_round_x4!(...)
+    ///
+    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+    ///
+    /// ```ignore
+    /// {
+    ///     sha1msg2(sha1msg1(work[0], work[1]) ^ work[2], work[3])
+    /// }
+    /// ```
+    #[macro_export]
     macro_rules! expand_round_x4 {
         ($work:expr, $t:expr) => {
             {
-                println!("{:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x}",
-                         $work[0], $work[1], $work[2], $work[3], $work[4],
-                         $work[5], $work[6], $work[7], $work[8], $work[9],
-                         $work[10], $work[11], $work[12], $work[13], $work[14],
-                         $work[15], $work[16], $work[17], $work[18], $work[19]);
-                
                 expand_round!($work, $t);
                 expand_round!($work, $t + 1);
                 expand_round!($work, $t + 2);
@@ -182,143 +193,163 @@ pub mod ops {
             }
         }
     }
-    macro_rules! digest_round_x5 {
+    
+    /// Macro digest_round_x4!(...)
+    ///
+    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+    ///
+    /// ```ignore
+    /// {
+    ///     let abcd = u32x4(a, b, c, d);
+    ///     let e000 = u32x4(e, 0, 0, 0);
+    ///
+    ///     abcd = sha1rnds4(abcd, e000 + work, i);
+    ///
+    ///     e = a.rotate_left(30);
+    ///     a = abcd.0;
+    ///     b = abcd.1;
+    ///     c = abcd.2;
+    ///     d = abcd.3;
+    /// }
+    /// ```
+    #[macro_export]
+    macro_rules! digest_round_x4 {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $k:expr, $w:expr, $t:expr, $i:expr) => {
             {
-                println!("{:08x} {:08x} {:08x} {:08x} {:08x}",
-                         $a, $b, $c, $d, $e);
-                
                 digest_round!($a, $b, $c, $d, $e, $k, $w[$t + 0], $i);
                 digest_round!($e, $a, $b, $c, $d, $k, $w[$t + 1], $i);
                 digest_round!($d, $e, $a, $b, $c, $k, $w[$t + 2], $i);
                 digest_round!($c, $d, $e, $a, $b, $k, $w[$t + 3], $i);
-                digest_round!($b, $c, $d, $e, $a, $k, $w[$t + 4], $i);
             }
         }
     }
-    
-    #[inline]
-    pub fn expand_round_x20(w: &mut [u32]) {
-        expand_round_x4!(w, 0);
-        expand_round_x4!(w, 4);
-        expand_round_x4!(w, 8);
-        expand_round_x4!(w, 12);
-        expand_round_x4!(w, 16);
+    macro_rules! expand_round_x20 {
+        ($w:expr) => {
+            {
+                expand_round_x4!($w, 0);
+                expand_round_x4!($w, 4);
+                expand_round_x4!($w, 8);
+                expand_round_x4!($w, 12);
+                expand_round_x4!($w, 16);
+            }
+        }
     }
-    
-    #[inline]
-    pub fn digest_round_x20(state: &mut [u32; 5], k: u32, w: &[u32], i: u8) {
-        let [mut a, mut b, mut c, mut d, mut e] = *state;
-        digest_round_x5!(a, b, c, d, e, k, w, 0, i);
-        digest_round_x5!(a, b, c, d, e, k, w, 5, i);
-        digest_round_x5!(a, b, c, d, e, k, w, 10, i);
-        digest_round_x5!(a, b, c, d, e, k, w, 15, i);
-        *state = [a, b, c, d, e];
+    macro_rules! digest_round_x20 {
+        ($a:ident, $b:ident, $c:ident, $d:ident,
+         $e:ident, $k:expr, $w:expr, $i:expr) => {
+            {
+                digest_round_x4!($a, $b, $c, $d, $e, $k, $w, 0, $i);
+                digest_round_x4!($b, $c, $d, $e, $a, $k, $w, 4, $i);
+                digest_round_x4!($c, $d, $e, $a, $b, $k, $w, 8, $i);
+                digest_round_x4!($d, $e, $a, $b, $c, $k, $w, 12, $i);
+                digest_round_x4!($e, $a, $b, $c, $d, $k, $w, 16, $i);
+            }
+        }
     }
 
+    /// TODO
     pub fn digest_block(state: &mut [u32; 5], buf: &[u8]) {
+        use super::consts::K;
         let state2 = *state;
         let mut w: [u32; 20] = [0; 20];
-        
+        let [mut a, mut b, mut c, mut d, mut e] = *state;
+
         beu32::decode_slice(&mut w[..16], buf);
         expand_round_x4!(w, 16);
-        digest_round_x20(state, K[0], &w, 0);
-        expand_round_x20(&mut w);
-        digest_round_x20(state, K[1], &w, 1);
-        expand_round_x20(&mut w);
-        digest_round_x20(state, K[2], &w, 2);
-        expand_round_x20(&mut w);
-        digest_round_x20(state, K[3], &w, 3);
+        digest_round_x20!(a, b, c, d, e, K[0], w, 0);
+        expand_round_x20!(&mut w);
+        digest_round_x20!(a, b, c, d, e, K[1], w, 1);
+        expand_round_x20!(&mut w);
+        digest_round_x20!(a, b, c, d, e, K[2], w, 2);
+        expand_round_x20!(&mut w);
+        digest_round_x20!(a, b, c, d, e, K[3], w, 3);
 
+        *state = [a, b, c, d, e];
         for i in 0..5 {
             state[i] = state[i]
                 .wrapping_add(state2[i]);
         }
     }
-    
+
+    /// TODO
     pub fn digest(buf: &[u8]) -> [u32; 5] {
-        let mut pad_buf = [0u8; 128];
-        let pad_len = StdPad::new(buf.len())
-            .read(&mut pad_buf[..]).unwrap();
+        use std::default::Default;
+        use utils::Digest;
         
-        // Pad the message to a multiple of 64 bytes
-        let blocks = buf.iter().cloned()
-            .chain((&pad_buf[..pad_len]).iter().cloned())
-            .collect::<Vec<u8>>();
-        
-        // Digest these blocks of 64 bytes.
-        let mut state = H;
-        for block in blocks.chunks(64) {
-            digest_block(&mut state, block);
-        }
-        state
+        super::Sha1::default().digest(buf).0
     }
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use std::default::Default;
-    use std::ffi::IntoBytes;
     use std::io::prelude::*;
     use serialize::hex::ToHex;
     use test::Bencher;
-    use bswap::beu32;
     use super::Sha1;
+    use utils::{Digest, DigestExt};
     
     //
     // Helper functions
     //
-    
+
     fn digest_block(state: &mut [u32; 5], buf: &[u8]) {
         super::ops::digest_block(state, buf);
     }
-    
+
     fn digest(buf: &[u8]) -> Sha1 {
         let mut h: Sha1 = Default::default();
-        Write::write_all(&mut h, buf).unwrap();
-        Write::flush(&mut h).unwrap();
+        h.digest(buf);
         h
     }
 
     fn digest_to_bytes(buf: &[u8]) -> Vec<u8> {
-        digest(buf).into_bytes()
+        digest(buf).to_bytes()
     }
 
     fn digest_to_hex(msg: &str) -> String {
         digest(&msg.as_bytes()).to_hex()
     }
 
-    //pub fn super::digest_block(state: &mut [u8], msg: &[u8]) {
-    //    //use super::sw_openssl::digest;
-    //    //digest(hash, msg);
-    //    use std::mem::transmute;
-    //    let (mut state2, _): (&mut [u8; 20], usize) = unsafe { transmute(state) };
-    //    super::sw::digest_block(state2, msg);
-    //}
     //
-    //pub fn super::digest(state: &mut [u8], msg: &[u8]) {
-    //    //use super::sw_openssl::digest;
-    //    //digest(hash, msg);
-    //    use super::Sha1;
-    //    
-    //    super::sw::digest(state, msg);
-    //}
+    // Tests for `hash`
     //
-    ///// Digest whole message, return hex string
-    //#[unstable(feature = "sha_internals", reason = "will be trait method")]
-    //pub fn digest_to_hex(msg: &str) -> String {
-    //    let mut hash = [0u8; 20];
-    //    super::digest(&mut hash[0..20], msg.as_bytes());
-    //    hash.to_hex()
-    //}
-    
+
+    #[test]
+    fn sha1_empty_hash() {
+        use std::hash::{Hash, Hasher};
+
+        let msg: &[u8] = "".as_bytes();
+        let mut h: Sha1 = Default::default();
+        <u8 as Hash>::hash_slice(msg, &mut h);
+        let digest: u64 = h.finish();
+        assert_eq!(0xda39a3ee5e6b4b0du64, digest);
+    }
+
+    #[test]
+    fn sha1_hello_hash() {
+        use std::hash::{Hash, Hasher};
+
+        let msg: &[u8] = "hello world".as_bytes();
+        let mut h: Sha1 = Default::default();
+        <u8 as Hash>::hash_slice(msg, &mut h);
+        let digest: u64 = h.finish();
+        assert_eq!(0x2aae6c35c94fcfb4u64, digest);
+    }
+
     //
     // Tests for `digest_to_hex`
     //
 
     #[test]
-    fn sha1_hello() {
+    fn test_sha1_empty() {
+        assert_eq!("da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                   digest_to_hex("").as_slice());
+    }
+
+    #[test]
+    fn test_sha1_hello() {
         assert_eq!("2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
                    digest_to_hex("hello world").as_slice());
         assert_eq!("430ce34d020724ed75a196dfc2ad67c77772d169",
@@ -352,34 +383,30 @@ pub mod tests {
         assert_eq!("0a0a9f2a6772942557ab5355d76af442f8f65e01",
                    digest_to_hex("Hello, World!").as_slice());
     }
-    
+
     #[test]
-    fn sha1_empty() {
-        assert_eq!("da39a3ee5e6b4b0d3255bfef95601890afd80709",
-                   digest_to_hex("").as_slice());
-    }
-    
-    #[test]
-    fn test_multi_block() {
+    fn test_sha1_multi() {
         let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
         assert_eq!("a31e8cb8a139d146a0070fa13795d6766acaccd4", digest_to_hex(s).as_slice());
     }
-    
-    
+
+
     #[bench]
-    fn bench_hello_world(b: & mut Bencher) {
+    fn bench_sha1_hello(b: & mut Bencher) {
         let s = "hello world";
-    
+
         b.iter(|| digest_to_hex(s));
+        b.bytes = s.len() as u64;
     }
-    
+
     #[bench]
-    fn bench_multi_block(b: & mut Bencher) {
+    fn bench_sha1_multi(b: & mut Bencher) {
         let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
-    
+
         b.iter(|| digest_to_hex(s));
+        b.bytes = s.len() as u64;
     }
-    
+
     //#[bench]
     //pub fn block_64(bh: & mut Bencher) {
     //    let mut state = [0u8; 20];
@@ -389,27 +416,27 @@ pub mod tests {
     //        });
     //    bh.bytes = bytes.len() as u64;
     //}
-    
+
     //
     // Benchmarks for `digest`
     //
 
     #[bench]
-    fn sha1_10(b: & mut Bencher) {
+    fn bench_sha1_10(b: & mut Bencher) {
         let buf = [0x20u8; 10];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
     }
     #[bench]
-    fn sha1_1k(b: & mut Bencher) {
+    fn bench_sha1_1k(b: & mut Bencher) {
         let buf = [0x20u8; 1024];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
     }
     #[bench]
-    fn sha1_64k(b: & mut Bencher) {
+    fn bench_sha1_64k(b: & mut Bencher) {
         let buf = [0x20u8; 65536];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
-    }  
+    }
 }

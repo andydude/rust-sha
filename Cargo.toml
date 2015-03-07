@@ -1,6 +1,6 @@
 [package]
 name = "sha"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
 
 [dependencies]
