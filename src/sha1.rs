@@ -2,8 +2,7 @@
 #[derive(Clone)]
 pub struct Sha1(pub [u32; 5], Vec<u8>);
 
-/// TODO: docs
-pub mod impls {
+mod impls {
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -135,6 +134,7 @@ pub mod ops {
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
+    
     macro_rules! round_func {
         ($a:expr, $b:expr, $c:expr, $i:expr) => {
             match $i {
@@ -146,7 +146,9 @@ pub mod ops {
             }
         }
     }
-    macro_rules! expand_round {
+    
+    #[macro_export]
+    macro_rules! sha1_expand_round {
         ($work:expr, $t:expr) => {
             {
                 let temp = $work[($t + 4 + 0) % 20]
@@ -158,12 +160,16 @@ pub mod ops {
             }
         }
     }
-    macro_rules! digest_round {
+
+    #[macro_export]
+    macro_rules! sha1_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
-         $e:ident, $k:expr, $w:expr, $i:expr) => {
+         $e:ident, $w:expr, $i:expr) => {
             {
+                use super::consts::K;
+                
                 $e = $e
-                    .wrapping_add($k)
+                    .wrapping_add(K[$i])
                     .wrapping_add($w)
                     .wrapping_add(rotate_left!($a, 5))
                     .wrapping_add(round_func!($b, $c, $d, $i));
@@ -172,31 +178,23 @@ pub mod ops {
             }
         }
     }
-    
-    /// Macro expand_round_x4!(...)
-    ///
-    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+
+    /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
     /// {
     ///     sha1msg2(sha1msg1(work[0], work[1]) ^ work[2], work[3])
     /// }
     /// ```
-    #[macro_export]
-    macro_rules! expand_round_x4 {
-        ($work:expr, $t:expr) => {
-            {
-                expand_round!($work, $t);
-                expand_round!($work, $t + 1);
-                expand_round!($work, $t + 2);
-                expand_round!($work, $t + 3);
-            }
-        }
+    #[inline]
+    pub fn expand_round_x4(w: &mut [u32; 20], t: usize) {
+        sha1_expand_round!(w, t);
+        sha1_expand_round!(w, t + 1);
+        sha1_expand_round!(w, t + 2);
+        sha1_expand_round!(w, t + 3);
     }
-    
-    /// Macro digest_round_x4!(...)
-    ///
-    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+
+    /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
     /// {
@@ -212,60 +210,58 @@ pub mod ops {
     ///     d = abcd.3;
     /// }
     /// ```
-    #[macro_export]
-    macro_rules! digest_round_x4 {
-        ($a:ident, $b:ident, $c:ident, $d:ident,
-         $e:ident, $k:expr, $w:expr, $t:expr, $i:expr) => {
-            {
-                digest_round!($a, $b, $c, $d, $e, $k, $w[$t + 0], $i);
-                digest_round!($e, $a, $b, $c, $d, $k, $w[$t + 1], $i);
-                digest_round!($d, $e, $a, $b, $c, $k, $w[$t + 2], $i);
-                digest_round!($c, $d, $e, $a, $b, $k, $w[$t + 3], $i);
-            }
-        }
+    #[inline]
+    pub fn digest_round_x4(state: &mut [u32; 5], w: [u32; 4], i: usize) {
+        let [mut a, mut b, mut c, mut d, mut e] = *state;
+        sha1_digest_round!(a, b, c, d, e, w[0], i);
+        sha1_digest_round!(e, a, b, c, d, w[1], i);
+        sha1_digest_round!(d, e, a, b, c, w[2], i);
+        sha1_digest_round!(c, d, e, a, b, w[3], i);
+        *state = [b, c, d, e, a];
     }
-    macro_rules! expand_round_x20 {
-        ($w:expr) => {
-            {
-                expand_round_x4!($w, 0);
-                expand_round_x4!($w, 4);
-                expand_round_x4!($w, 8);
-                expand_round_x4!($w, 12);
-                expand_round_x4!($w, 16);
-            }
-        }
+
+    #[inline]
+    pub fn expand_round_x20(w: &mut [u32; 20]) {
+        expand_round_x4(w, 0);
+        expand_round_x4(w, 4);
+        expand_round_x4(w, 8);
+        expand_round_x4(w, 12);
+        expand_round_x4(w, 16);
     }
-    macro_rules! digest_round_x20 {
-        ($a:ident, $b:ident, $c:ident, $d:ident,
-         $e:ident, $k:expr, $w:expr, $i:expr) => {
-            {
-                digest_round_x4!($a, $b, $c, $d, $e, $k, $w, 0, $i);
-                digest_round_x4!($b, $c, $d, $e, $a, $k, $w, 4, $i);
-                digest_round_x4!($c, $d, $e, $a, $b, $k, $w, 8, $i);
-                digest_round_x4!($d, $e, $a, $b, $c, $k, $w, 12, $i);
-                digest_round_x4!($e, $a, $b, $c, $d, $k, $w, 16, $i);
+
+    #[inline]
+    pub fn digest_round_x20(state: &mut [u32; 5], w: [u32; 20], i: usize) {
+        macro_rules! as_simd {
+            ($x:expr) => {
+                {
+                    let (y, _): (&[u32; 4], usize) =
+                        unsafe {::std::mem::transmute($x)}; *y
+                }
             }
         }
+        
+        digest_round_x4(state, as_simd!(&w[0..4]), i);
+        digest_round_x4(state, as_simd!(&w[4..8]), i);
+        digest_round_x4(state, as_simd!(&w[8..12]), i);
+        digest_round_x4(state, as_simd!(&w[12..16]), i);
+        digest_round_x4(state, as_simd!(&w[16..20]), i);
     }
 
     /// TODO
     pub fn digest_block(state: &mut [u32; 5], buf: &[u8]) {
-        use super::consts::K;
         let state2 = *state;
         let mut w: [u32; 20] = [0; 20];
-        let [mut a, mut b, mut c, mut d, mut e] = *state;
 
         beu32::decode_slice(&mut w[..16], buf);
-        expand_round_x4!(w, 16);
-        digest_round_x20!(a, b, c, d, e, K[0], w, 0);
-        expand_round_x20!(&mut w);
-        digest_round_x20!(a, b, c, d, e, K[1], w, 1);
-        expand_round_x20!(&mut w);
-        digest_round_x20!(a, b, c, d, e, K[2], w, 2);
-        expand_round_x20!(&mut w);
-        digest_round_x20!(a, b, c, d, e, K[3], w, 3);
+        expand_round_x4(&mut w, 16);
+        digest_round_x20(state, w, 0);
+        expand_round_x20(&mut w);
+        digest_round_x20(state, w, 1);
+        expand_round_x20(&mut w);
+        digest_round_x20(state, w, 2);
+        expand_round_x20(&mut w);
+        digest_round_x20(state, w, 3);
 
-        *state = [a, b, c, d, e];
         for i in 0..5 {
             state[i] = state[i]
                 .wrapping_add(state2[i]);
@@ -317,7 +313,7 @@ mod tests {
     //
 
     #[test]
-    fn sha1_empty_hash() {
+    fn test_sha1_empty_hash() {
         use std::hash::{Hash, Hasher};
 
         let msg: &[u8] = "".as_bytes();
@@ -328,7 +324,7 @@ mod tests {
     }
 
     #[test]
-    fn sha1_hello_hash() {
+    fn test_sha1_hello_hash() {
         use std::hash::{Hash, Hasher};
 
         let msg: &[u8] = "hello world".as_bytes();
@@ -438,5 +434,54 @@ mod tests {
         let buf = [0x20u8; 65536];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
+    }
+
+    //
+    // Benchmarks for `digest_to_bytes`
+    //
+
+    #[bench]
+    fn bench_sha1_to_bytes_10(b: & mut Bencher) {
+        let buf = [0x20u8; 10];
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
+    }
+    #[bench]
+    fn bench_sha1_to_bytes_1k(b: & mut Bencher) {
+        let buf = [0x20u8; 1024];
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
+    }
+    #[bench]
+    fn bench_sha1_to_bytes_64k(b: & mut Bencher) {
+        let buf = [0x20u8; 65536];
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
+    }
+
+    //
+    // Benchmarks for `digest_to_hex`
+    //
+
+    #[bench]
+    fn bench_sha1_to_hex_10(b: & mut Bencher) {
+        let buf = [0x20u8; 10];
+        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+        b.iter( || { digest_to_hex(msg); });
+        b.bytes = msg.len() as u64;
+    }
+    #[bench]
+    fn bench_sha1_to_hex_1k(b: & mut Bencher) {
+        let buf = [0x20u8; 1024];
+        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+        b.iter( || { digest_to_hex(msg); });
+        b.bytes = msg.len() as u64;
+    }
+    #[bench]
+    fn bench_sha1_to_hex_64k(b: & mut Bencher) {
+        let buf = [0x20u8; 65536];
+        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+        b.iter( || { digest_to_hex(msg); });
+        b.bytes = msg.len() as u64;
     }
 }

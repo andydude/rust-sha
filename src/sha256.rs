@@ -2,8 +2,7 @@
 #[derive(Clone)]
 pub struct Sha256([u32; 8], Vec<u8>);
 
-/// TODO
-pub mod impls {
+mod impls {
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -28,8 +27,8 @@ pub mod impls {
 
         /// Reset the state
         fn reset(&mut self) {
-            let state = super::consts::H;
-            self.0 = state;
+            self.0 = super::consts::H;
+            self.1.clear();
         }
     }
 
@@ -159,8 +158,9 @@ pub mod ops {
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
+    
     #[macro_export]
-    macro_rules! expand_round {
+    macro_rules! sha256_expand_round {
         ($work:expr, $t:expr) => {
             {
                 let w = $work[($t + 0) & 15]
@@ -172,8 +172,9 @@ pub mod ops {
             }
         }
     }
+    
     #[macro_export]
-    macro_rules! digest_round {
+    macro_rules! sha256_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $f:ident, $g:ident, $h:ident,
          $k:expr, $w:expr) => {
@@ -192,9 +193,7 @@ pub mod ops {
         }
     }
     
-    /// Macro expand_round_x4!(...)
-    ///
-    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+    /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
     /// {
@@ -202,21 +201,15 @@ pub mod ops {
     ///     sha256msg2(sha256msg1(work[0], work[1]) + temp, work[3])
     /// }
     /// ```
-    #[macro_export]
-    macro_rules! expand_round_x4 {
-        ($work:expr, $t:expr) => {
-            {
-                expand_round!($work, $t);
-                expand_round!($work, $t + 1);
-                expand_round!($work, $t + 2);
-                expand_round!($work, $t + 3);
-            }
-        }
+    #[inline]
+    pub fn expand_round_x4(w: &mut [u32; 16], t: usize) {
+        sha256_expand_round!(w, t);
+        sha256_expand_round!(w, t + 1);
+        sha256_expand_round!(w, t + 2);
+        sha256_expand_round!(w, t + 3);
     }
     
-    /// Macro digest_round_x4!(...)
-    ///
-    /// This macro can be easily implemented with Intel SHA intruction set extensions.
+    /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
     /// {
@@ -226,73 +219,88 @@ pub mod ops {
     ///     cdgh = sha256rnds2(cdgh, abef, work);
     ///     abef = sha256rnds2(abef, cdgh, sha256swap(work));
     ///
-    ///     a = abcd.0;
-    ///     b = abcd.1;
+    ///     a = abef.0;
+    ///     b = abef.1;
     ///     c = cdgh.0;
     ///     d = cdgh.1;
-    ///     e = abcd.2;
-    ///     f = abcd.3;
+    ///     e = abef.2;
+    ///     f = abef.3;
     ///     g = cdgh.2;
     ///     h = cdgh.3;
     /// }
     /// ```
-    #[macro_export]
-    macro_rules! digest_round_x4 {
-        ($a:ident, $b:ident, $c:ident, $d:ident,
-         $e:ident, $f:ident, $g:ident, $h:ident,
-         $k:expr, $w:expr, $t:expr) => {
-            {
-                digest_round!($a, $b, $c, $d, $e, $f, $g, $h, ($k)[$t + 0], ($w)[$t + 0]);
-                digest_round!($h, $a, $b, $c, $d, $e, $f, $g, ($k)[$t + 1], ($w)[$t + 1]);
-                digest_round!($g, $h, $a, $b, $c, $d, $e, $f, ($k)[$t + 2], ($w)[$t + 2]);
-                digest_round!($f, $g, $h, $a, $b, $c, $d, $e, ($k)[$t + 3], ($w)[$t + 3]);
-            }
-        }
+    #[inline]
+    pub fn digest_round_x4(state: &mut [u32; 8], k: [u32; 4], w: [u32; 4]) {
+        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = *state;
+        sha256_digest_round!(a, b, c, d, e, f, g, h, k[0], w[0]);
+        sha256_digest_round!(h, a, b, c, d, e, f, g, k[1], w[1]);
+        sha256_digest_round!(g, h, a, b, c, d, e, f, k[2], w[2]);
+        sha256_digest_round!(f, g, h, a, b, c, d, e, k[3], w[3]);
+        *state = [e, f, g, h, a, b, c, d];
     }
     
-    #[macro_export]
-    macro_rules! expand_round_x16 {
-        ($w:expr) => {
-            {
-                expand_round_x4!($w, 0);
-                expand_round_x4!($w, 4);
-                expand_round_x4!($w, 8);
-                expand_round_x4!($w, 12);
-            }
-        }
+    #[inline]
+    pub fn expand_round_x16(w: &mut [u32; 16]) {
+        expand_round_x4(w, 0);
+        expand_round_x4(w, 4);
+        expand_round_x4(w, 8);
+        expand_round_x4(w, 12);
     }
 
-    #[macro_export]
-    macro_rules! digest_round_x16 {
-        ($a:ident, $b:ident, $c:ident, $d:ident,
-         $e:ident, $f:ident, $g:ident, $h:ident,
-         $k:expr, $w:expr) => {
-            {
-                digest_round_x4!($a, $b, $c, $d, $e, $f, $g, $h, $k, $w, 0);
-                digest_round_x4!($e, $f, $g, $h, $a, $b, $c, $d, $k, $w, 4);
-                digest_round_x4!($a, $b, $c, $d, $e, $f, $g, $h, $k, $w, 8);
-                digest_round_x4!($e, $f, $g, $h, $a, $b, $c, $d, $k, $w, 12);
+    
+    #[inline]
+    pub fn digest_round_x16(state: &mut [u32; 8], k: [u32; 16], w: [u32; 16]) {
+        macro_rules! as_simd {
+            ($x:expr) => {
+                {
+                    let (y, _): (&[u32; 4], usize) =
+                        unsafe {::std::mem::transmute($x)}; *y
+                }
             }
         }
+
+        digest_round_x4(state, as_simd!(&k[0..4]), as_simd!(&w[0..4]));
+        digest_round_x4(state, as_simd!(&k[4..8]), as_simd!(&w[4..8]));
+        digest_round_x4(state, as_simd!(&k[8..12]), as_simd!(&w[8..12]));
+        digest_round_x4(state, as_simd!(&k[12..16]), as_simd!(&w[12..16]));
     }
 
     /// TODO
     pub fn digest_block(state: &mut [u32; 8], buf: &[u8]) {
+        use std::mem::transmute;
         use super::consts::K;
         let state2 = *state;
         let mut w: [u32; 16] = [0; 16];
-        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = *state;
         
-        beu32::decode_slice(&mut w[..], buf);
-        digest_round_x16!(a, b, c, d, e, f, g, h, &K[0..16], &w);
-        expand_round_x16!(&mut w);
-        digest_round_x16!(a, b, c, d, e, f, g, h, &K[16..32], &w);
-        expand_round_x16!(&mut w);
-        digest_round_x16!(a, b, c, d, e, f, g, h, &K[32..48], &w);
-        expand_round_x16!(&mut w);
-        digest_round_x16!(a, b, c, d, e, f, g, h, &K[48..64], &w);
+        macro_rules! as_simd_array {
+            ($x:expr) => {{let (y, _): (&[u32; 16], usize) = unsafe {transmute($x)}; *y}}
+        }
 
-        *state = [a, b, c, d, e, f, g, h];
+        beu32::decode_slice(&mut w[..], buf);
+        digest_round_x16(state, as_simd_array!(&K[0..16]), w);
+        expand_round_x16(&mut w);
+        digest_round_x16(state, as_simd_array!(&K[16..32]), w);
+        expand_round_x16(&mut w);
+        digest_round_x16(state, as_simd_array!(&K[32..48]), w);
+        expand_round_x16(&mut w);
+        digest_round_x16(state, as_simd_array!(&K[48..64]), w);
+
+        //digest_round_x4(state, as_simd!(&K[0..4]), as_simd!(&w[0..4]));
+        //digest_round_x4(state, as_simd!(&K[4..8]), as_simd!(&w[4..8]));
+        //digest_round_x4(state, as_simd!(&K[8..12]), as_simd!(&w[8..12]));
+        //digest_round_x4(state, as_simd!(&K[12..16]), as_simd!(&w[12..16]));
+        //
+        //for r in 1..4 {
+        //    expand_round_x4(&mut w, 0);
+        //    digest_round_x4(state, as_simd!(&K[16*r..16*r + 4]), as_simd!(&w[0..4]));
+        //    expand_round_x4(&mut w, 4);
+        //    digest_round_x4(state, as_simd!(&K[16*r + 4..16*r + 8]), as_simd!(&w[4..8]));
+        //    expand_round_x4(&mut w, 8);
+        //    digest_round_x4(state, as_simd!(&K[16*r + 8..16*r + 12]), as_simd!(&w[8..12]));
+        //    expand_round_x4(&mut w, 12);
+        //    digest_round_x4(state, as_simd!(&K[16*r + 12..16*r + 16]), as_simd!(&w[12..16]));
+        //}
+        
         for i in 0..8 {
             state[i] = state[i]
                 .wrapping_add(state2[i]);
@@ -309,14 +317,15 @@ pub mod ops {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
+    use std::str;
     use std::default::Default;
     use std::io::prelude::*;
     use bswap::beu32;
     use serialize::hex::ToHex;
     use test::Bencher;
     use super::Sha256;
-    use utils::{Digest, DigestExt};
+    use utils::{Reset, Digest, DigestExt};
 
     //
     // Helper functions
@@ -345,7 +354,7 @@ pub mod tests {
     //
 
     #[test]
-    fn sha256_empty_hash() {
+    fn test_sha256_empty_hash() {
         use std::hash::{Hash, Hasher};
 
         let msg: &[u8] = "".as_bytes();
@@ -356,7 +365,7 @@ pub mod tests {
     }
 
     #[test]
-    fn sha256_hello_hash() {
+    fn test_sha256_hello_hash() {
         use std::hash::{Hash, Hasher};
 
         let msg: &[u8] = "hello world".as_bytes();
@@ -365,20 +374,20 @@ pub mod tests {
         let digest: u64 = h.finish();
         assert_eq!(0xb94d27b9934d3e08u64, digest);
     }
-
+   
     //
     // Tests for `digest_to_hex`
     //
 
     #[test]
-    fn sha256_empty() {
+    fn test_sha256_empty() {
 
         assert_eq!("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                    digest_to_hex("").as_slice());
     }
 
     #[test]
-    fn sha256_hello() {
+    fn test_sha256_hello() {
 
         assert_eq!("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
                    digest_to_hex("hello world").as_slice());
@@ -430,15 +439,16 @@ pub mod tests {
     }
 
     #[test]
-    fn sha256_multi_block() {
+    fn test_sha256_multi() {
         let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
         assert_eq!("d33d14f2ea60beb394082598e05375cdd6ff8966315322c34b6faea80e7d5a7c", digest_to_hex(s).as_slice());
     }
 
     #[test]
-    fn sha256_is_hex_ok_1k() {
-        let s = "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ";
-        assert_eq!("08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952", digest_to_hex(s).as_slice());
+    fn test_sha256_1k() {
+        let buf = [0x20; 1000];
+        let msg = str::from_utf8(&buf[..]).unwrap();
+        assert_eq!("08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952", digest_to_hex(msg).as_slice());
     }
 
     //
@@ -446,7 +456,7 @@ pub mod tests {
     //
 
     #[test]
-    fn sha256_hello_bytes() {
+    fn test_sha256_hello_bytes() {
         let bytes = digest_to_bytes("hello world".as_bytes());
 
         assert_eq!(b"\xb9\x4d\x27\xb9\x93\x4d\x3e\x08\xa5\x2e\x52\xd7\xda\x7d\xab\xfa\xc4\x84\xef\xe3\x7a\x53\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9",
@@ -458,7 +468,7 @@ pub mod tests {
     //
 
     #[test]
-    fn sha256_hello_digest() {
+    fn test_sha256_hello_digest() {
         let words: [u32; 8] = digest("hello world".as_bytes()).0;
 
         assert_eq!(words[0], 0xb94d27b9);
@@ -495,7 +505,7 @@ pub mod tests {
     }
 
     #[test]
-    fn sha256_empty_block() {
+    fn test_sha256_empty_block() {
         use serialize::hex::ToHex;
         let mut state: [u32; 8] = [0; 8];
         (&mut state[..]).clone_from_slice(&super::consts::H[..]);
@@ -509,7 +519,7 @@ pub mod tests {
     }
 
     #[test]
-    fn sha256_hello_block() {
+    fn test_sha256_hello_block() {
         use serialize::hex::ToHex;
         let mut state: [u32; 8] = [0; 8];
         (&mut state[..]).clone_from_slice(&super::consts::H[..]);
@@ -523,7 +533,7 @@ pub mod tests {
     }
 
     #[bench]
-    pub fn sha256_block(bh: & mut Bencher) {
+    pub fn bench_sha256_block(bh: & mut Bencher) {
         let mut state: [u32; 8] = [0; 8];
         let bytes = [1u8; 16*4];
         let block = &bytes[..];
@@ -536,7 +546,7 @@ pub mod tests {
     //
 
     #[bench]
-    fn sha256_hello_blocks(b: & mut Bencher) {
+    fn bench_sha256_hello_block(b: & mut Bencher) {
         let mut state: [u32; 8] = [0; 8];
         (&mut state[..]).clone_from_slice(&super::consts::H[..]);
         let block_vec = make_hello_block();
@@ -546,7 +556,7 @@ pub mod tests {
     }
 
     #[bench]
-    fn sha256_empty_blocks(b: & mut Bencher) {
+    fn bench_sha256_empty_block(b: & mut Bencher) {
         let mut state: [u32; 8] = [0; 8];
         (&mut state[..]).clone_from_slice(&super::consts::H[..]);
         let block_vec = make_empty_block();
@@ -560,19 +570,19 @@ pub mod tests {
     //
 
     #[bench]
-    fn sha256_10(b: & mut Bencher) {
+    fn bench_sha256_10(b: & mut Bencher) {
         let buf = [0x20u8; 10];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
     }
     #[bench]
-    fn sha256_1k(b: & mut Bencher) {
+    fn bench_sha256_1k(b: & mut Bencher) {
         let buf = [0x20u8; 1024];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
     }
     #[bench]
-    fn sha256_64k(b: & mut Bencher) {
+    fn bench_sha256_64k(b: & mut Bencher) {
         let buf = [0x20u8; 65536];
         b.iter( || { digest(&buf[..]); });
         b.bytes = buf.len() as u64;
@@ -583,52 +593,110 @@ pub mod tests {
     //
 
     #[bench]
-    fn sha256_to_bytes_10(b: & mut Bencher) {
+    fn bench_sha256_to_bytes_10(b: & mut Bencher) {
         let buf = [0x20u8; 10];
-        let msg = &buf[..];
-        b.iter( || { digest_to_bytes(msg); });
-        b.bytes = msg.len() as u64;
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
     }
-    //#[bench]
-    //fn sha256_to_bytes_1k(b: & mut Bencher) {
-    //    let buf = [0x20u8; 1024];
-    //    let msg = &buf[..];
-    //    b.iter( || { digest_to_bytes(msg); });
-    //    b.bytes = msg.len() as u64;
-    //}
-    //#[bench]
-    //fn sha256_to_bytes_64k(b: & mut Bencher) {
-    //    let buf = [0x20u8; 65536];
-    //    let msg = &buf[..];
-    //    b.iter( || { digest_to_bytes(msg); });
-    //    b.bytes = msg.len() as u64;
-    //}
+    #[bench]
+    fn bench_sha256_to_bytes_1k(b: & mut Bencher) {
+        let buf = [0x20u8; 1024];
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
+    }
+    #[bench]
+    fn bench_sha256_to_bytes_64k(b: & mut Bencher) {
+        let buf = [0x20u8; 65536];
+        b.iter( || { digest_to_bytes(&buf[..]); });
+        b.bytes = buf.len() as u64;
+    }
 
     //
     // Benchmarks for `digest_to_hex`
     //
 
     #[bench]
-    fn sha256_to_hex_10(b: & mut Bencher) {
+    fn bench_sha256_to_hex_10(b: & mut Bencher) {
         let buf = [0x20u8; 10];
         let msg = ::std::str::from_utf8(&buf[..]).unwrap();
         b.iter( || { digest_to_hex(msg); });
         b.bytes = msg.len() as u64;
     }
-    //#[bench]
-    //fn sha256_to_hex_1k(b: & mut Bencher) {
-    //    let buf = [0x20u8; 1024];
-    //    let msg = ::std::str::from_utf8(&buf[..]).unwrap();
-    //    b.iter( || { digest_to_hex(msg); });
-    //    b.bytes = msg.len() as u64;
-    //}
-    //#[bench]
-    //fn sha256_to_hex_64k(b: & mut Bencher) {
-    //    let buf = [0x20u8; 65536];
-    //    let msg = ::std::str::from_utf8(&buf[..]).unwrap();
-    //    b.iter( || { digest_to_hex(msg); });
-    //    b.bytes = msg.len() as u64;
-    //}
+    #[bench]
+    fn bench_sha256_to_hex_1k(b: & mut Bencher) {
+        let buf = [0x20u8; 1024];
+        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+        b.iter( || { digest_to_hex(msg); });
+        b.bytes = msg.len() as u64;
+    }
+    #[bench]
+    fn bench_sha256_to_hex_64k(b: & mut Bencher) {
+        let buf = [0x20u8; 65536];
+        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+        b.iter( || { digest_to_hex(msg); });
+        b.bytes = msg.len() as u64;
+    }
+
+    //
+    // Test Structure
+    //
+    
+    struct Test {
+        input: &'static str,
+        output_str: &'static str,
+    }
+
+    fn make_test_list() -> Vec<Test> {
+        // Examples from wikipedia
+        let wikipedia_tests = vec![
+            Test {
+                input: "",
+                output_str: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            Test {
+                input: "The quick brown fox jumps over the lazy dog",
+                output_str: "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+            },
+            Test {
+                input: "The quick brown fox jumps over the lazy dog.",
+                output_str: "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c"
+            },
+        ];
+        wikipedia_tests
+    }
+    
+    #[test]
+    fn test_sha256_wikipedia() {
+
+        let tests = make_test_list();
+        let mut h: Sha256 = Default::default();
+        
+        // Test that it works when accepting the message all at once
+        for t in tests.iter() {
+            let out_str = h.digest(t.input.as_bytes()).to_hex();
+            assert_eq!(&out_str[..], t.output_str);
+            h.reset();
+        }
+        
+        // Test that it works when accepting the message in pieces
+        for t in tests.iter() {
+            let len = t.input.len();
+            let mut left = len;
+            
+            while left > 0 {
+                let take = (left + 1) / 2;
+                h.write((&t.input[len - left..take + len - left]).as_bytes()).unwrap();
+                left = left - take;
+            }
+            h.flush().unwrap();
+        
+            let out_str = h.to_hex();
+            assert_eq!(&out_str[..], t.output_str);
+        
+            h.reset();
+        }
+    }
+
 }
 
 //#[cfg(test)]
@@ -636,110 +704,4 @@ pub mod tests {
 //    use digest::Digest;
 //    use sha2::{Sha512, Sha384, Sha512Trunc256, Sha512Trunc224, Sha256, Sha224};
 //
-//    struct Test {
-//        input: &'static str,
-//        output_str: &'static str,
-//    }
-//
-//    fn test_hash<D: Digest>(sh: &mut D, tests: &[Test]) {
-//        // Test that it works when accepting the message all at once
-//        for t in tests.iter() {
-//            sh.input_str(t.input);
-//
-//            let out_str = sh.result_str();
-//            assert!(&out_str[..] == t.output_str);
-//
-//            sh.reset();
-//        }
-//
-//        // Test that it works when accepting the message in pieces
-//        for t in tests.iter() {
-//            let len = t.input.len();
-//            let mut left = len;
-//            while left > 0 {
-//                let take = (left + 1) / 2;
-//                sh.input_str(&t.input[len - left..take + len - left]);
-//                left = left - take;
-//            }
-//
-//            let out_str = sh.result_str();
-//            assert!(&out_str[..] == t.output_str);
-//
-//            sh.reset();
-//        }
-//    }
-//
-//    #[test]
-//    fn test_sha256() {
-//        // Examples from wikipedia
-//        let wikipedia_tests = vec![
-//            Test {
-//                input: "",
-//                output_str: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-//            },
-//            Test {
-//                input: "The quick brown fox jumps over the lazy dog",
-//                output_str: "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
-//            },
-//            Test {
-//                input: "The quick brown fox jumps over the lazy dog.",
-//                output_str: "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c"
-//            },
-//        ];
-//
-//        let tests = wikipedia_tests;
-//
-//        let mut sh = box Sha256::new();
-//
-//        test_hash(&mut *sh, &tests[..]);
-//    }
-//
-//    #[test]
-//    fn test_1million_random_sha256() {
-//        let mut sh = Sha256::new();
-//        test_digest_1million_random(
-//            &mut sh,
-//            64,
-//            "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
-//    }
-//}
-
-//#[cfg(test)]
-//mod bench {
-//    use test::Bencher;
-//    //use digest::Digest;
-//    use super::{8, 16};
-//    use super::{Sha256, sha256_digest_block_u32};
-//    use super::ops;
-//    
-//
-//    #[bench]
-//    pub fn sha256_10(bh: & mut Bencher) {
-//        let mut sh = Sha256::new();
-//        let bytes = [1u8; 10];
-//        bh.iter( || {
-//                ops::sha256_digest(&bytes);
-//        });
-//        bh.bytes = bytes.len() as u64;
-//    }
-//
-//    #[bench]
-//    pub fn sha256_1k(bh: & mut Bencher) {
-//        let mut sh = Sha256::new();
-//        let bytes = [1u8; 1024];
-//        bh.iter( || {
-//                ops::sha256_digest(&bytes);
-//        });
-//        bh.bytes = bytes.len() as u64;
-//    }
-//
-//    #[bench]
-//    pub fn sha256_64k(bh: & mut Bencher) {
-//        let mut sh = Sha256::new();
-//        let bytes = [1u8; 65536];
-//        bh.iter( || {
-//                ops::sha256_digest(&bytes);
-//        });
-//        bh.bytes = bytes.len() as u64;
-//    }
 //}
