@@ -14,7 +14,7 @@ mod impls {
                 DigestExt,
                 ReadPadBlocksExt,
                 StdPad};
-    
+
     impl Default for Sha256 {
 
         /// Construct a default `Sha256` object.
@@ -33,17 +33,17 @@ mod impls {
     }
 
     impl Write for Sha256 {
-        
+
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
             Write::write(&mut self.1, buf)
         }
-        
+
         /// Digest buffer
         fn flush(&mut self) -> io::Result<()> {
             let mut state = self.0;
             let ref buf = self.1;
-            
+
             fn pad(len: usize) -> StdPad {
                 let mut suffix = vec![0u8; 8];
                 beu64::encode(&mut suffix[..], 8*len as u64);
@@ -53,12 +53,12 @@ mod impls {
             for block in buf.pad_blocks(64, |len: usize| pad(len)) {
                 super::ops::digest_block(&mut state, &block);
             }
-            
+
             self.0 = state;
             Ok(())
         }
     }
-    
+
     impl Read for Sha256 {
 
         /// Read state as big-endian
@@ -70,17 +70,17 @@ mod impls {
     }
 
     impl Hasher for Sha256 {
-    
+
         /// Get the first 8 bytes of the state
         fn finish(&self) -> u64 {
             let mut h = self.clone();
             h.flush().unwrap();
             let state = h.0;
-            
+
             ((state[0] as u64) << 32u64) |
              (state[1] as u64)
         }
-    
+
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) {
             Write::write(self, buf).unwrap();
@@ -88,7 +88,7 @@ mod impls {
     }
 
     impl Digest for Sha256 {}
-    
+
     impl DigestExt for Sha256 {
         fn default_len() -> usize {
             return 32;
@@ -158,7 +158,7 @@ pub mod ops {
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
-    
+
     macro_rules! sha256_expand_round {
         ($work:expr, $t:expr) => {
             {
@@ -171,7 +171,7 @@ pub mod ops {
             }
         }
     }
-    
+
     macro_rules! sha256_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $f:ident, $g:ident, $h:ident,
@@ -190,7 +190,7 @@ pub mod ops {
             }
         }
     }
-    
+
     /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
@@ -206,12 +206,12 @@ pub mod ops {
         sha256_expand_round!(w, t + 2);
         sha256_expand_round!(w, t + 3);
     }
-    
+
     /// This function can be easily implemented with Intel SHA intruction set extensions.
     ///
     /// ```ignore
     /// {
-    ///     let abcd = u32x4(a, b, e, f);
+    ///     let abef = u32x4(a, b, e, f);
     ///     let cdgh = u32x4(c, d, g, h);
     ///
     ///     cdgh = sha256rnds2(cdgh, abef, work);
@@ -236,7 +236,7 @@ pub mod ops {
         sha256_digest_round!(f, g, h, a, b, c, d, e, k[3], w[3]);
         *state = [e, f, g, h, a, b, c, d];
     }
-    
+
     #[inline]
     pub fn expand_round_x16(w: &mut [u32; 16]) {
         expand_round_x4(w, 0);
@@ -245,7 +245,7 @@ pub mod ops {
         expand_round_x4(w, 12);
     }
 
-    
+
     #[inline]
     pub fn digest_round_x16(state: &mut [u32; 8], k: [u32; 16], w: [u32; 16]) {
         macro_rules! as_simd {
@@ -269,7 +269,7 @@ pub mod ops {
         use super::consts::K;
         let state2 = *state;
         let mut w: [u32; 16] = [0; 16];
-        
+
         macro_rules! as_simd_array {
             ($x:expr) => {{let (y, _): (&[u32; 16], usize) = unsafe {transmute($x)}; *y}}
         }
@@ -298,18 +298,18 @@ pub mod ops {
         //    expand_round_x4(&mut w, 12);
         //    digest_round_x4(state, as_simd!(&K[16*r + 12..16*r + 16]), as_simd!(&w[12..16]));
         //}
-        
+
         for i in 0..8 {
             state[i] = state[i]
                 .wrapping_add(state2[i]);
         }
     }
-    
+
     /// TODO
     pub fn digest(buf: &[u8]) -> [u32; 8] {
         use std::default::Default;
         use utils::Digest;
-        
+
         super::Sha256::default().digest(buf).0
     }
 }
@@ -332,7 +332,7 @@ mod tests {
     fn digest_block(state: &mut [u32; 8], buf: &[u8]) {
         super::ops::digest_block(state, buf);
     }
-    
+
     fn digest(buf: &[u8]) -> Sha256 {
         let mut h: Sha256 = Default::default();
         h.digest(buf);
@@ -372,7 +372,7 @@ mod tests {
         let digest: u64 = h.finish();
         assert_eq!(0xb94d27b9934d3e08u64, digest);
     }
-   
+
     //
     // Tests for `digest_to_hex`
     //
@@ -538,7 +538,7 @@ mod tests {
         bh.iter( || { digest_block(&mut state, block); });
         bh.bytes = 64u64;
     }
-    
+
     //
     // Benchmarks for `digest_bytes`
     //
@@ -638,7 +638,7 @@ mod tests {
     //
     // Test Structure
     //
-    
+
     struct Test {
         input: &'static str,
         output_str: &'static str,
@@ -662,35 +662,35 @@ mod tests {
         ];
         wikipedia_tests
     }
-    
+
     #[test]
     fn test_sha256_wikipedia() {
 
         let tests = make_test_list();
         let mut h: Sha256 = Default::default();
-        
+
         // Test that it works when accepting the message all at once
         for t in tests.iter() {
             let out_str = h.digest(t.input.as_bytes()).to_hex();
             assert_eq!(&out_str[..], t.output_str);
             h.reset();
         }
-        
+
         // Test that it works when accepting the message in pieces
         for t in tests.iter() {
             let len = t.input.len();
             let mut left = len;
-            
+
             while left > 0 {
                 let take = (left + 1) / 2;
                 h.write((&t.input[len - left..take + len - left]).as_bytes()).unwrap();
                 left = left - take;
             }
             h.flush().unwrap();
-        
+
             let out_str = h.to_hex();
             assert_eq!(&out_str[..], t.output_str);
-        
+
             h.reset();
         }
     }

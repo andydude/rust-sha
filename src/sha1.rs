@@ -43,7 +43,7 @@ mod impls {
         fn flush(&mut self) -> io::Result<()> {
             let mut state = self.0;
             let ref buf = self.1;
-            
+
             fn pad(len: usize) -> StdPad {
                 let mut suffix = vec![0u8; 8];
                 beu64::encode(&mut suffix[..], 8*len as u64);
@@ -53,7 +53,7 @@ mod impls {
             for block in buf.pad_blocks(64, |len: usize| pad(len)) {
                 super::ops::digest_block(&mut state, &block);
             }
-            
+
             self.0 = state;
             Ok(())
         }
@@ -72,17 +72,17 @@ mod impls {
     }
 
     impl Hasher for Sha1 {
-    
+
         /// Get the first 8 bytes of the state
         fn finish(&self) -> u64 {
             let mut h = self.clone();
             h.flush().unwrap();
             let state = h.0;
-            
+
             ((state[0] as u64) << 32u64) |
              (state[1] as u64)
         }
-    
+
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) {
             Write::write(self, buf).unwrap();
@@ -134,7 +134,7 @@ pub mod ops {
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
-    
+
     macro_rules! round_func {
         ($a:expr, $b:expr, $c:expr, $i:expr) => {
             match $i {
@@ -146,7 +146,7 @@ pub mod ops {
             }
         }
     }
-    
+
     macro_rules! sha1_expand_round {
         ($work:expr, $t:expr) => {
             {
@@ -165,7 +165,7 @@ pub mod ops {
          $e:ident, $w:expr, $i:expr) => {
             {
                 use super::consts::K;
-                
+
                 $e = $e
                     .wrapping_add(K[$i])
                     .wrapping_add($w)
@@ -237,7 +237,7 @@ pub mod ops {
                 }
             }
         }
-        
+
         digest_round_x4(state, as_simd!(&w[0..4]), i);
         digest_round_x4(state, as_simd!(&w[4..8]), i);
         digest_round_x4(state, as_simd!(&w[8..12]), i);
@@ -270,7 +270,7 @@ pub mod ops {
     pub fn digest(buf: &[u8]) -> [u32; 5] {
         use std::default::Default;
         use utils::Digest;
-        
+
         super::Sha1::default().digest(buf).0
     }
 }
@@ -283,7 +283,7 @@ mod tests {
     use test::Bencher;
     use super::Sha1;
     use utils::{Digest, DigestExt};
-    
+
     //
     // Helper functions
     //

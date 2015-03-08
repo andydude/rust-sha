@@ -14,7 +14,7 @@ mod impls {
                 DigestExt,
                 ReadPadBlocksExt,
                 StdPad};
-    
+
     impl Default for Sha512 {
 
         /// Construct a default `Sha512` object.
@@ -33,17 +33,17 @@ mod impls {
     }
 
     impl Write for Sha512 {
-        
+
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
             Write::write(&mut self.1, buf)
         }
-        
+
         /// Digest buffer
         fn flush(&mut self) -> io::Result<()> {
             let mut state = self.0;
             let ref buf = self.1;
-            
+
             fn pad(len: usize) -> StdPad {
                 let mut suffix = vec![0u8; 16];
                 beu64::encode(&mut suffix[8..], 8*len as u64);
@@ -53,12 +53,12 @@ mod impls {
             for block in buf.pad_blocks(128, |len: usize| pad(len)) {
                 super::ops::digest_block(&mut state, &block);
             }
-            
+
             self.0 = state;
             Ok(())
         }
     }
-    
+
     impl Read for Sha512 {
 
         /// Read state as big-endian
@@ -70,14 +70,14 @@ mod impls {
     }
 
     impl Hasher for Sha512 {
-    
+
         /// Get the first 8 bytes of the state
         fn finish(&self) -> u64 {
             let mut h = self.clone();
             h.flush().unwrap();
             h.0[0]
         }
-    
+
         /// Write to buffer
         fn write(&mut self, buf: &[u8]) {
             Write::write(self, buf).unwrap();
@@ -85,7 +85,7 @@ mod impls {
     }
 
     impl Digest for Sha512 {}
-    
+
     impl DigestExt for Sha512 {
         fn default_len() -> usize {
             return 64;
@@ -159,7 +159,7 @@ pub mod ops {
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
-    
+
     macro_rules! sha512_expand_round {
         ($work:expr, $t:expr) => {
             {
@@ -172,7 +172,7 @@ pub mod ops {
             }
         }
     }
-    
+
     macro_rules! sha512_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $f:ident, $g:ident, $h:ident,
@@ -192,7 +192,7 @@ pub mod ops {
         }
     }
 
-    /// There are no plans for hardware implementations at this time, 
+    /// There are no plans for hardware implementations at this time,
     /// but this function can be easily implemented with some kind of
     /// SIMD assistance.
     ///
@@ -210,8 +210,8 @@ pub mod ops {
         sha512_expand_round!(w, t + 2);
         sha512_expand_round!(w, t + 3);
     }
-    
-    /// There are no plans for hardware implementations at this time, 
+
+    /// There are no plans for hardware implementations at this time,
     /// but this function can be easily implemented with some kind of
     /// SIMD assistance.
     ///
@@ -224,10 +224,10 @@ pub mod ops {
     ///     let dh = u64x2(d, h);
     ///
     ///     // this is the core expression
-    ///     dh = sha512rnd(ae, bf, cg, dh, work[0]);
-    ///     cg = sha512rnd(dh, ae, bf, cg, work[1]);
-    ///     bf = sha512rnd(cg, dh, ae, bf, work[2]);
-    ///     ae = sha512rnd(bf, cg, dh, ae, work[3]);
+    ///     dh = sha512rnd(dh, ae, bf, cg, work[0]);
+    ///     cg = sha512rnd(cg, dh, ae, bf, work[1]);
+    ///     bf = sha512rnd(bf, cg, dh, ae, work[2]);
+    ///     ae = sha512rnd(ae, bf, cg, dh, work[3]);
     ///
     ///     a = ae.0;
     ///     b = bf.0;
@@ -248,7 +248,7 @@ pub mod ops {
         sha512_digest_round!(f, g, h, a, b, c, d, e, k[3], w[3]);
         *state = [e, f, g, h, a, b, c, d];
     }
-    
+
     /// TODO
     #[inline]
     pub fn expand_round_x16(w: &mut [u64; 16]) {
@@ -257,7 +257,7 @@ pub mod ops {
         expand_round_x4(w, 8);
         expand_round_x4(w, 12);
     }
-    
+
     /// TODO
     #[inline]
     pub fn digest_round_x16(state: &mut [u64; 8], k: [u64; 16], w: [u64; 16]) {
@@ -277,7 +277,7 @@ pub mod ops {
         use super::consts::K;
         let state2 = *state;
         let mut w: [u64; 16] = [0; 16];
-        
+
         macro_rules! as_simd_array {
             ($x:expr) => {{let (y, _): (&[u64; 16], usize) = unsafe {transmute($x)}; *y}}
         }
@@ -298,12 +298,12 @@ pub mod ops {
                 .wrapping_add(state2[i]);
         }
     }
-    
+
     /// TODO
     pub fn digest(buf: &[u8]) -> [u64; 8] {
         use std::default::Default;
         use utils::Digest;
-        
+
         super::Sha512::default().digest(buf).0
     }
 }
@@ -326,7 +326,7 @@ mod tests {
     fn digest_block(state: &mut [u64; 8], buf: &[u8]) {
         super::ops::digest_block(state, buf);
     }
-    
+
     fn digest(buf: &[u8]) -> Sha512 {
         let mut h: Sha512 = Default::default();
         h.digest(buf);
@@ -366,7 +366,7 @@ mod tests {
         let digest: u64 = h.finish();
         assert_eq!(0x309ecc489c12d6ebu64, digest);
     }
-   
+
     //
     // Tests for `digest_to_hex`
     //
@@ -486,34 +486,34 @@ mod tests {
     //     let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
     //     assert_eq!("d33d14f2ea60beb394082598e05375cdd6ff8966315322c34b6faea80e7d5a7c", digest_to_hex(s).as_slice());
     // }
-    // 
+    //
     // #[test]
     // fn test_sha512_1k() {
     //     let buf = [0x20; 1000];
     //     let msg = str::from_utf8(&buf[..]).unwrap();
     //     assert_eq!("08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952", digest_to_hex(msg).as_slice());
     // }
-    // 
+    //
     // //
     // // Tests for `digest_to_bytes`
     // //
-    // 
+    //
     // #[test]
     // fn test_sha512_hello_bytes() {
     //     let bytes = digest_to_bytes("hello world".as_bytes());
-    // 
+    //
     //     assert_eq!(b"\xb9\x4d\x27\xb9\x93\x4d\x3e\x08\xa5\x2e\x52\xd7\xda\x7d\xab\xfa\xc4\x84\xef\xe3\x7a\x53\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9",
     //                bytes.as_slice());
     // }
-    // 
+    //
     // //
     // // Tests for `digest`
     // //
-    // 
+    //
     // #[test]
     // fn test_sha512_hello_digest() {
     //     let words: [u64; 8] = digest("hello world".as_bytes()).0;
-    // 
+    //
     //     assert_eq!(words[0], 0xb94d27b9);
     //     assert_eq!(words[1], 0x934d3e08);
     //     assert_eq!(words[2], 0xa52e52d7);
@@ -523,30 +523,30 @@ mod tests {
     //     assert_eq!(words[6], 0x9088f7ac);
     //     assert_eq!(words[7], 0xe2efcde9);
     // }
-    // 
+    //
     // //
     // // Tests for `digest_block`
     // //
-    // 
+    //
     // fn make_empty_block() -> Vec<u8> {
     //     let mut block = vec![0u8; 16*4];
     //     assert_eq!(block.len(), 16*4);
     //     block[0] = 0x80u8;
     //     block
     // }
-    // 
+    //
     // fn make_hello_block() -> Vec<u8> {
-    // 
+    //
     //     // this could use a concat_bytes!
     //     static HELLO_BLOCK: &'static [u8] = b"hello world\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x58";
-    // 
+    //
     //     let mut block: Vec<u8> = Vec::with_capacity(16*4);
     //     unsafe { block.set_len(16*4) };
     //     (&mut block[..]).clone_from_slice(HELLO_BLOCK);
     //     assert_eq!(block.len(), 16*4);
     //     block
     // }
-    // 
+    //
     // #[test]
     // fn test_sha512_empty_block() {
     //     use serialize::hex::ToHex;
@@ -560,7 +560,7 @@ mod tests {
     //     assert_eq!("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     //                bytes.as_slice().to_hex());
     // }
-    // 
+    //
     // #[test]
     // fn test_sha512_hello_block() {
     //     use serialize::hex::ToHex;
@@ -574,7 +574,7 @@ mod tests {
     //     assert_eq!("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
     //                bytes.as_slice().to_hex());
     // }
-    // 
+    //
     // #[bench]
     // pub fn bench_sha512_block(bh: & mut Bencher) {
     //     let mut state: [u64; 8] = [0; 8];
@@ -583,11 +583,11 @@ mod tests {
     //     bh.iter( || { digest_block(&mut state, block); });
     //     bh.bytes = 64u64;
     // }
-    // 
+    //
     // //
     // // Benchmarks for `digest_bytes`
     // //
-    // 
+    //
     // #[bench]
     // fn bench_sha512_hello_block(b: & mut Bencher) {
     //     let mut state: [u64; 8] = [0; 8];
@@ -597,7 +597,7 @@ mod tests {
     //     b.iter( || { digest_block(&mut state, block) });
     //     b.bytes = 64u64;
     // }
-    // 
+    //
     // #[bench]
     // fn bench_sha512_empty_block(b: & mut Bencher) {
     //     let mut state: [u64; 8] = [0; 8];
@@ -607,11 +607,11 @@ mod tests {
     //     b.iter( || { digest_block(&mut state, block) });
     //     b.bytes = 64u64;
     // }
-    // 
+    //
     // //
     // // Benchmarks for `digest`
     // //
-    // 
+    //
     // #[bench]
     // fn bench_sha512_10(b: & mut Bencher) {
     //     let buf = [0x20u8; 10];
@@ -630,11 +630,11 @@ mod tests {
     //     b.iter( || { digest(&buf[..]); });
     //     b.bytes = buf.len() as u64;
     // }
-    // 
+    //
     // //
     // // Benchmarks for `digest_to_bytes`
     // //
-    // 
+    //
     // #[bench]
     // fn bench_sha512_to_bytes_10(b: & mut Bencher) {
     //     let buf = [0x20u8; 10];
@@ -653,11 +653,11 @@ mod tests {
     //     b.iter( || { digest_to_bytes(&buf[..]); });
     //     b.bytes = buf.len() as u64;
     // }
-    // 
+    //
     // //
     // // Benchmarks for `digest_to_hex`
     // //
-    // 
+    //
     // #[bench]
     // fn bench_sha512_to_hex_10(b: & mut Bencher) {
     //     let buf = [0x20u8; 10];
@@ -679,16 +679,16 @@ mod tests {
     //     b.iter( || { digest_to_hex(msg); });
     //     b.bytes = msg.len() as u64;
     // }
-    // 
+    //
     // //
     // // Test Structure
     // //
-    // 
+    //
     // struct Test {
     //     input: &'static str,
     //     output_str: &'static str,
     // }
-    // 
+    //
     // fn make_test_list() -> Vec<Test> {
     //     // Examples from wikipedia
     //     let wikipedia_tests = vec![
@@ -707,35 +707,35 @@ mod tests {
     //     ];
     //     wikipedia_tests
     // }
-    // 
+    //
     // #[test]
     // fn test_sha512_wikipedia() {
-    // 
+    //
     //     let tests = make_test_list();
     //     let mut h: Sha512 = Default::default();
-    //     
+    //
     //     // Test that it works when accepting the message all at once
     //     for t in tests.iter() {
     //         let out_str = h.digest(t.input.as_bytes()).to_hex();
     //         assert_eq!(&out_str[..], t.output_str);
     //         h.reset();
     //     }
-    //     
+    //
     //     // Test that it works when accepting the message in pieces
     //     for t in tests.iter() {
     //         let len = t.input.len();
     //         let mut left = len;
-    //         
+    //
     //         while left > 0 {
     //             let take = (left + 1) / 2;
     //             h.write((&t.input[len - left..take + len - left]).as_bytes()).unwrap();
     //             left = left - take;
     //         }
     //         h.flush().unwrap();
-    //     
+    //
     //         let out_str = h.to_hex();
     //         assert_eq!(&out_str[..], t.output_str);
-    //     
+    //
     //         h.reset();
     //     }
     // }
