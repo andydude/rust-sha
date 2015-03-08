@@ -21,5 +21,5 @@ pub mod sha1;
 #[stable(feature = "default", since = "1.0.0")]
 pub mod sha256;
 
-//#[stable(feature = "default", since = "1.0.0")]
-//pub mod sha512;
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha512;

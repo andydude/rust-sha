@@ -159,7 +159,6 @@ pub mod ops {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
     }
     
-    #[macro_export]
     macro_rules! sha256_expand_round {
         ($work:expr, $t:expr) => {
             {
@@ -173,7 +172,6 @@ pub mod ops {
         }
     }
     
-    #[macro_export]
     macro_rules! sha256_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $f:ident, $g:ident, $h:ident,

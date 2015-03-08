@@ -147,7 +147,6 @@ pub mod ops {
         }
     }
     
-    #[macro_export]
     macro_rules! sha1_expand_round {
         ($work:expr, $t:expr) => {
             {
@@ -161,7 +160,6 @@ pub mod ops {
         }
     }
 
-    #[macro_export]
     macro_rules! sha1_digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident,
          $e:ident, $w:expr, $i:expr) => {
