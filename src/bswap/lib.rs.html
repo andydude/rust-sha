@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/Users/ajr/.cargo/git/checkouts/rust-bswap-08e702241ca52da4/master/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/Users/ajr/.cargo/registry/src/github.com-1ecc6299db9ec823/bswap-0.1.8/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -593,60 +593,220 @@
 <span id="551">551</span>
 <span id="552">552</span>
 <span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
 </pre><pre class='rust '>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>, <span class='ident'>test</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
+<span class='comment'>/*
+pub mod intrinsics {
+    use std::intrinsics;
+    use std::num::Int;
+    
+    pub unsafe fn reverse_memory_inplace&lt;T: Int&gt;(dst: *mut T, count: usize) {
+        for i in 0..count {
+            let (d, s) = (*dst.offset(0), *dst.offset(i));
+            (*dst.offset(i)) = (*src.offset(i)).swap_bytes();
+        }
+    }
+    pub unsafe fn reverse_memory&lt;T: Int&gt;(dst: *mut T, src: *const T, count: usize) {
+        for i in 0..count {
+            (*dst.offset(i)) = (*src.offset(i)).swap_bytes();
+            dst = dst.offset(1);
+            src = src.offset(1);
+        }
+    }
+
+    // 
+    pub unsafe fn reverse_nonoverlapping_memory&lt;T: Int&gt;(dst: *mut T, src: *const T, count: usize) {
+    }
+    
+    // bswap
+    pub unsafe fn swap_memory_inplace&lt;T: Int&gt;(dst: *mut T, count: usize) {
+        for i in 0..count {
+            dst.offset(i) = dst.offset(i).swap_bytes();
+        }
+    }
+    
+    // bswapmove
+    pub unsafe fn swap_memory&lt;T: Int&gt;(dst: *mut T, src: *const T, count: usize) {
+        unsafe {
+            let diff: isize = intrinsics::transmute(dst - src);
+            
+        }
+    }
+    // bswapcopy
+    pub unsafe fn swap_nonoverlapping_memory&lt;T: Int&gt;(dst: *mut T, src: *const T, count: usize) {
+    }
+}
+ */</span>
 
 <span class='doccomment'>/// Swap bytes for `u8` slices on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u8</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
+    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>intrinsics</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>1</span>;
 
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>align_of_ptr</span>(<span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='kw'>let</span> <span class='ident'>off</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='ident'>src</span>);
-        <span class='number'>2</span>.<span class='ident'>pow</span>(<span class='ident'>off</span>.<span class='ident'>trailing_zeros</span>())
+        <span class='kw'>let</span> <span class='ident'>off</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>intrinsics</span>::<span class='ident'>transmute</span>(<span class='ident'>src</span>);
+        <span class='number'>2</span>.<span class='ident'>pow</span>(<span class='ident'>off</span>.<span class='ident'>trailing_zeros</span>() <span class='kw'>as</span> <span class='ident'>u32</span>)
     }
 
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>reverse_slice_inplace</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
+        <span class='ident'>buf</span>.<span class='ident'>reverse</span>();
+    }
+
+    <span class='doccomment'>/// TODO</span>
+    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>reverse_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
+        <span class='kw'>unsafe</span> {
+            <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(),
+                                                   <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(),
+                                                   <span class='ident'>src</span>.<span class='ident'>len</span>());
+        }
+        <span class='ident'>dst</span>.<span class='ident'>reverse</span>();
+    }
+
+    <span class='doccomment'>/// TODO</span>
+    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
+    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>count</span>: <span class='ident'>usize</span>) {
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
-        <span class='kw'>let</span> <span class='ident'>n</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>len</span> <span class='op'>&gt;&gt;</span> <span class='number'>1</span>;
+        <span class='kw'>let</span> <span class='ident'>n</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>count</span> <span class='op'>&gt;&gt;</span> <span class='number'>1</span>;
         <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>n</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>isize</span>),
-                      <span class='ident'>b</span>.<span class='ident'>offset</span>((<span class='ident'>len</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>i</span>) <span class='kw'>as</span> <span class='ident'>isize</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>isize</span>),
+                      <span class='ident'>b</span>.<span class='ident'>offset</span>((<span class='ident'>count</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>i</span>) <span class='kw'>as</span> <span class='ident'>isize</span>));
         }
     }
 
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory</span>(<span class='ident'>dst</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory</span>(<span class='ident'>dst</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>count</span>: <span class='ident'>usize</span>) {
         <span class='kw'>let</span> (<span class='kw-2'>mut</span> <span class='ident'>d</span>, <span class='kw-2'>mut</span> <span class='ident'>s</span>) <span class='op'>=</span> (<span class='ident'>dst</span>, <span class='ident'>src</span>);
-        <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>offset</span>((<span class='ident'>len</span> <span class='op'>-</span> <span class='number'>1</span>) <span class='kw'>as</span> <span class='ident'>isize</span>);
-        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
+        <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>offset</span>((<span class='ident'>count</span> <span class='op'>-</span> <span class='number'>1</span>) <span class='kw'>as</span> <span class='ident'>isize</span>);
+        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>count</span> {
             <span class='op'>*</span><span class='ident'>d</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>s</span>;
             <span class='ident'>d</span> <span class='op'>=</span> <span class='ident'>d</span>.<span class='ident'>offset</span>(<span class='number'>1</span>);
             <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>offset</span>(<span class='op'>-</span><span class='number'>1</span>);
         }
     }
+
+    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory_array_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>count</span>: <span class='ident'>usize</span>, <span class='ident'>size</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
+        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>count</span> {
+            <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..(<span class='ident'>size</span><span class='op'>/</span><span class='number'>2</span>) {
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>isize</span>),
+                          <span class='ident'>b</span>.<span class='ident'>offset</span>((<span class='ident'>size</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>i</span>) <span class='kw'>as</span> <span class='ident'>isize</span>));
+            }
+            <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='ident'>size</span> <span class='kw'>as</span> <span class='ident'>isize</span>);
+        }
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>reverse_memory_array</span>(<span class='ident'>dst</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>count</span>: <span class='ident'>usize</span>, <span class='ident'>size</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>let</span> (<span class='kw-2'>mut</span> <span class='ident'>d</span>, <span class='kw-2'>mut</span> <span class='ident'>s</span>) <span class='op'>=</span> (<span class='ident'>dst</span>, <span class='ident'>src</span>);
+        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>count</span> {
+            <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>size</span> {
+                <span class='op'>*</span>(<span class='ident'>d</span>.<span class='ident'>offset</span>(<span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>isize</span>)) <span class='op'>=</span> <span class='op'>*</span>(<span class='ident'>s</span>.<span class='ident'>offset</span>((<span class='ident'>size</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>i</span>) <span class='kw'>as</span> <span class='ident'>isize</span>));
+            }
+            <span class='ident'>d</span> <span class='op'>=</span> <span class='ident'>d</span>.<span class='ident'>offset</span>(<span class='ident'>size</span> <span class='kw'>as</span> <span class='ident'>isize</span>);
+            <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>offset</span>(<span class='ident'>size</span> <span class='kw'>as</span> <span class='ident'>isize</span>);
+        }
+    }    
 }
 
 <span class='doccomment'>/// Swap bytes for `u16` objects on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u16</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>2</span>;
 
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>));
             <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>);
         }
     }
@@ -666,14 +826,14 @@
 
 <span class='doccomment'>/// Swap bytes for `[u8; 3]` objects on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u24</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>3</span>;
     
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>));
             <span class='comment'>// we don&#39;t need to swap 1 and 1</span>
             <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>);
         }
@@ -694,15 +854,15 @@
 
 <span class='doccomment'>/// Swap bytes for `[u8; 5]` objects on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u40</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>5</span>;
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
             <span class='comment'>// we don&#39;t need to swap 2 and 2</span>
             <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>);
         }
@@ -725,16 +885,16 @@
 
 <span class='doccomment'>/// Swap bytes for `[u8; 6]` objects on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u48</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>6</span>;
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
             <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>6</span>);
         }
     }
@@ -757,16 +917,16 @@
 
 <span class='doccomment'>/// Swap bytes for `[u8; 7]` objects on all targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u56</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>7</span>;
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>6</span>));
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
-            <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>6</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
+            <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
             <span class='comment'>// we don&#39;t need to swap 3 and 3</span>
             <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>7</span>);
         }
@@ -793,7 +953,6 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u32</span> {
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>4</span>;
 
 
@@ -804,10 +963,11 @@
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
 
         <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>u32_swap_memory_inplace_u8</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+            <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
             <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>));
                 <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>);
             }
         }
@@ -867,7 +1027,6 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>u64</span> {
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
     <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>7</span>;
 
     <span class='doccomment'>/// Swaps `len*8` bytes for `u64` objects inplace in `buf`.</span>
@@ -877,12 +1036,13 @@
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory_inplace</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
 
         <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>u64_swap_memory_inplace_u8</span>(<span class='ident'>buf</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
+            <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>::<span class='ident'>swap</span>;
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>buf</span>;
             <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>len</span> {
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>7</span>));
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>6</span>));
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
-                <span class='ident'>ptr</span>::<span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>0</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>7</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>1</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>6</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>2</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>5</span>));
+                <span class='ident'>swap</span>(<span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>3</span>), <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>4</span>));
                 <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>offset</span>(<span class='number'>8</span>);
             }
         }
@@ -943,49 +1103,47 @@
 }
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beusize</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
+    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>intrinsics</span>;
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode</span>(<span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>nbytes</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>src</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>nbytes</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>src</span>.<span class='ident'>len</span>(), <span class='ident'>nbytes</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='number'>0</span> <span class='op'>&lt;</span> <span class='ident'>nbytes</span> <span class='op'>&amp;&amp;</span> <span class='ident'>nbytes</span> <span class='op'>&lt;=</span> <span class='number'>8</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>dst</span> <span class='op'>=</span> [<span class='number'>0u8</span>; <span class='number'>8</span>];
         <span class='kw'>let</span> <span class='ident'>ptr_out</span> <span class='op'>=</span> <span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>();
         <span class='kw'>unsafe</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
-                <span class='ident'>ptr_out</span>.<span class='ident'>offset</span>((<span class='number'>8</span> <span class='op'>-</span> <span class='ident'>nbytes</span>) <span class='kw'>as</span> <span class='ident'>isize</span>),
-                <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
+            <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
+                <span class='ident'>ptr_out</span>.<span class='ident'>offset</span>((<span class='number'>8</span> <span class='op'>-</span> <span class='ident'>nbytes</span>) <span class='kw'>as</span> <span class='ident'>isize</span>), <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
             (<span class='op'>*</span>(<span class='ident'>ptr_out</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u64</span>)).<span class='ident'>to_be</span>()
         }
     }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='ident'>u64</span>, <span class='ident'>nbytes</span>: <span class='ident'>usize</span>) {
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>nbytes</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='ident'>nbytes</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='number'>0</span> <span class='op'>&lt;</span> <span class='ident'>nbytes</span> <span class='op'>&amp;&amp;</span> <span class='ident'>nbytes</span> <span class='op'>&lt;=</span> <span class='number'>8</span>);
         <span class='kw'>unsafe</span> {
-            <span class='kw'>let</span> <span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>; <span class='number'>8</span>] <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>mem</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>_, [<span class='ident'>u8</span>; <span class='number'>8</span>]<span class='op'>&gt;</span>(<span class='ident'>src</span>.<span class='ident'>to_be</span>());
-            <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
+            <span class='comment'>// n.b. https://github.com/rust-lang/rust/issues/22776</span>
+            <span class='kw'>let</span> <span class='ident'>bytes</span>: [<span class='ident'>u8</span>; <span class='number'>8</span>] <span class='op'>=</span> <span class='ident'>intrinsics</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>_, [<span class='ident'>u8</span>; <span class='number'>8</span>]<span class='op'>&gt;</span>(<span class='ident'>src</span>.<span class='ident'>to_be</span>());
+            <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
                 <span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), (<span class='kw-2'>&amp;</span><span class='ident'>bytes</span>[<span class='number'>8</span> <span class='op'>-</span> <span class='ident'>nbytes</span>..]).<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
         }
     }
 }
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leusize</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
+    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>intrinsics</span>;
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode</span>(<span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>nbytes</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>src</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>nbytes</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>src</span>.<span class='ident'>len</span>(), <span class='ident'>nbytes</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='number'>0</span> <span class='op'>&lt;</span> <span class='ident'>nbytes</span> <span class='op'>&amp;&amp;</span> <span class='ident'>nbytes</span> <span class='op'>&lt;=</span> <span class='number'>8</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>dst</span> <span class='op'>=</span> [<span class='number'>0u8</span>; <span class='number'>8</span>];
         <span class='kw'>let</span> <span class='ident'>ptr_out</span> <span class='op'>=</span> <span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>();
         <span class='kw'>unsafe</span> {
-            <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
+            <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
                 <span class='ident'>ptr_out</span>, <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
             (<span class='op'>*</span>(<span class='ident'>ptr_out</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u64</span>)).<span class='ident'>to_le</span>()
         }
@@ -993,11 +1151,13 @@
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='ident'>u64</span>, <span class='ident'>nbytes</span>: <span class='ident'>usize</span>) {
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>nbytes</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='ident'>nbytes</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='number'>0</span> <span class='op'>&lt;</span> <span class='ident'>nbytes</span> <span class='op'>&amp;&amp;</span> <span class='ident'>nbytes</span> <span class='op'>&lt;=</span> <span class='number'>8</span>);
         <span class='kw'>unsafe</span> {
-            <span class='kw'>let</span> <span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>; <span class='number'>8</span>] <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>mem</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>_, [<span class='ident'>u8</span>; <span class='number'>8</span>]<span class='op'>&gt;</span>(<span class='ident'>src</span>.<span class='ident'>to_le</span>());
-            <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), (<span class='kw-2'>&amp;</span><span class='ident'>bytes</span>[..<span class='ident'>nbytes</span>]).<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
+            <span class='comment'>// n.b. https://github.com/rust-lang/rust/issues/22776</span>
+            <span class='kw'>let</span> <span class='ident'>bytes</span>: [<span class='ident'>u8</span>; <span class='number'>8</span>] <span class='op'>=</span> <span class='ident'>intrinsics</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>_, [<span class='ident'>u8</span>; <span class='number'>8</span>]<span class='op'>&gt;</span>(<span class='ident'>src</span>.<span class='ident'>to_le</span>());
+            <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(
+                <span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), (<span class='kw-2'>&amp;</span><span class='ident'>bytes</span>[..<span class='ident'>nbytes</span>]).<span class='ident'>as_ptr</span>(), <span class='ident'>nbytes</span>);
         }
     }
 }
@@ -1005,26 +1165,25 @@
 
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>mod_odd_impls</span> {
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>I</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>DFunc</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>EMeth</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>E</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>NotE</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> {
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>intrinsics</span>;
 
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
             <span class='kw'>if</span> <span class='macro'>cfg</span><span class='macro'>!</span>(<span class='ident'>target_endian</span> <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>NotE</span>) {
                 <span class='ident'>super</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>swap_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span>);
             } <span class='kw'>else</span> {
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span><span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span><span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             }
         }
 
         <span class='doccomment'>/// Decodes $E-endian bytes to a native-endian $T object.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span> {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>buf</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>buf</span>.<span class='ident'>len</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span> <span class='op'>=</span> <span class='ident'>mem</span>::<span class='ident'>uninitialized</span>();
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>buf</span>.<span class='ident'>as_ptr</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span> <span class='op'>=</span> <span class='ident'>intrinsics</span>::<span class='ident'>uninit</span>();
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>buf</span>.<span class='ident'>as_ptr</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
                 <span class='ident'>Int</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>DFunc</span>(<span class='ident'>tmp</span>)
             }
         }
@@ -1032,7 +1191,7 @@
         <span class='doccomment'>/// Decodes $E-endian bytes to a slice of native-endian $T objects.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [[<span class='ident'>u8</span>; <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>]], <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span> <span class='op'>&gt;=</span> <span class='ident'>src</span>.<span class='ident'>len</span>());
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>, <span class='ident'>src</span>.<span class='ident'>len</span>());
             <span class='kw'>unsafe</span> {
                 <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>dst</span>.<span class='ident'>len</span>());
             }
@@ -1041,17 +1200,17 @@
         <span class='doccomment'>/// Encodes a native-endian $T object to $E-endian bytes.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span>) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
                 <span class='kw'>let</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>S</span> <span class='op'>=</span> <span class='ident'>src</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>EMeth</span>();
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='kw-2'>&amp;</span><span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='kw-2'>&amp;</span><span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             }
         }
 
         <span class='doccomment'>/// Encodes a slice of native-endian $T objects to $E-endian bytes.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[[<span class='ident'>u8</span>; <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>]]) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>src</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='ident'>src</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
                 <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='ident'>src</span>.<span class='ident'>as_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>src</span>.<span class='ident'>len</span>());
             }
@@ -1061,27 +1220,26 @@
 }
 
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>mod_std_impls</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>I</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>DFunc</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>EMeth</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>E</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>NotE</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> {
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
+    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>I</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>DFunc</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>EMeth</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>E</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>NotE</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> {
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>Int</span>;
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
+        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>intrinsics</span>;
 
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>len</span>: <span class='ident'>usize</span>) {
             <span class='kw'>if</span> <span class='macro'>cfg</span><span class='macro'>!</span>(<span class='ident'>target_endian</span> <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>NotE</span>) {
                 <span class='ident'>super</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>swap_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span>);
             } <span class='kw'>else</span> {
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span><span class='op'>*</span>::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>len</span><span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             }
         }
 
         <span class='doccomment'>/// Decodes $E-endian bytes to a native-endian $T object.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span> {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>buf</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> ::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>buf</span>.<span class='ident'>len</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span> <span class='op'>=</span> <span class='ident'>mem</span>::<span class='ident'>uninitialized</span>();
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>buf</span>.<span class='ident'>as_ptr</span>(), ::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span> <span class='op'>=</span> <span class='ident'>intrinsics</span>::<span class='ident'>uninit</span>();
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>buf</span>.<span class='ident'>as_ptr</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
                 <span class='ident'>Int</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>DFunc</span>(<span class='ident'>tmp</span>)
             }
         }
@@ -1089,7 +1247,7 @@
         <span class='doccomment'>/// Decodes $E-endian bytes to a slice of native-endian $T objects.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>], <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>()<span class='op'>*</span>::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span> <span class='op'>&gt;=</span> <span class='ident'>src</span>.<span class='ident'>len</span>());
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>, <span class='ident'>src</span>.<span class='ident'>len</span>());
             <span class='kw'>unsafe</span> {
                 <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>, <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>dst</span>.<span class='ident'>len</span>());
             }
@@ -1098,17 +1256,17 @@
         <span class='doccomment'>/// Encodes a native-endian $T object to $E-endian bytes.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> ::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
                 <span class='kw'>let</span> <span class='ident'>tmp</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span> <span class='op'>=</span> <span class='ident'>src</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>EMeth</span>();
-                <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='kw-2'>&amp;</span><span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, ::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+                <span class='ident'>intrinsics</span>::<span class='ident'>copy_nonoverlapping_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='kw-2'>&amp;</span><span class='ident'>tmp</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> _ <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             }
         }
 
         <span class='doccomment'>/// Encodes a slice of native-endian $T objects to $E-endian bytes.</span>
         <span class='attribute'>#[<span class='ident'>inline</span>]</span>
         <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>encode_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>], <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>]) {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='ident'>src</span>.<span class='ident'>len</span>()<span class='op'>*</span>::<span class='ident'>std</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>::<span class='ident'>BYTES</span>);
+            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>dst</span>.<span class='ident'>len</span>(), <span class='ident'>src</span>.<span class='ident'>len</span>()<span class='op'>*</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Bytes</span>);
             <span class='kw'>unsafe</span> {
                 <span class='ident'>swap_memory</span>(<span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>(), <span class='ident'>src</span>.<span class='ident'>as_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>, <span class='ident'>src</span>.<span class='ident'>len</span>());
             }
@@ -1117,34 +1275,34 @@
     }
 }
 
+<span class='doccomment'>/// Swap bytes for `u16` objects only on little-endian targets, does nothing on big-endian targets.</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu16</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u16</span>, <span class='number'>2</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 3]` objects only on little-endian targets, does nothing on big-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu24</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u24</span>, <span class='ident'>u32</span>, <span class='number'>3</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
+<span class='doccomment'>/// Swap bytes for `u32` objects only on little-endian targets, does nothing on big-endian targets.</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu32</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u32</span>, <span class='number'>4</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 5]` objects only on little-endian targets, does nothing on big-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu40</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u40</span>, <span class='ident'>u64</span>, <span class='number'>5</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 6]` objects only on little-endian targets, does nothing on big-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu48</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u48</span>, <span class='ident'>u64</span>, <span class='number'>6</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 7]` objects only on little-endian targets, does nothing on big-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu56</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u56</span>, <span class='ident'>u64</span>, <span class='number'>7</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
+<span class='doccomment'>/// Swap bytes for `u64` objects only on little-endian targets, does nothing on big-endian targets.</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu64</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u64</span>, <span class='number'>8</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
+<span class='doccomment'>/// Swap bytes for `u16` objects only on big-endian targets, does nothing on little-endian targets.</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu16</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u16</span>, <span class='number'>2</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 3]` objects only on big-endian targets, does nothing on little-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu24</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u24</span>, <span class='ident'>u32</span>, <span class='number'>3</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
+<span class='doccomment'>/// Swap bytes for `u32` objects only on big-endian targets, does nothing on little-endian targets.</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu32</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u32</span>, <span class='number'>4</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 5]` objects only on big-endian targets, does nothing on little-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu40</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u40</span>, <span class='ident'>u64</span>, <span class='number'>5</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 6]` objects only on big-endian targets, does nothing on little-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu48</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u48</span>, <span class='ident'>u64</span>, <span class='number'>6</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `[u8; 7]` objects only on big-endian targets, does nothing on little-endian targets.</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu56</span> { <span class='macro'>mod_odd_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u56</span>, <span class='ident'>u64</span>, <span class='number'>7</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
-<span class='doccomment'>/// Swap bytes for `u16` objects only on little-endian targets, does nothing on big-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu16</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u16</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
-<span class='doccomment'>/// Swap bytes for `u16` objects only on big-endian targets, does nothing on little-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu16</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u16</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
-<span class='doccomment'>/// Swap bytes for `u32` objects only on little-endian targets, does nothing on big-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu32</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u32</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
-<span class='doccomment'>/// Swap bytes for `u32` objects only on big-endian targets, does nothing on little-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu32</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u32</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
-<span class='doccomment'>/// Swap bytes for `u64` objects only on little-endian targets, does nothing on big-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>beu64</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>be</span>, <span class='ident'>u64</span>, <span class='ident'>from_be</span>, <span class='ident'>to_be</span>, <span class='string'>&quot;big&quot;</span>, <span class='string'>&quot;little&quot;</span>); }
 <span class='doccomment'>/// Swap bytes for `u64` objects only on big-endian targets, does nothing on little-endian targets.</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu64</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u64</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>leu64</span> { <span class='macro'>mod_std_impls</span><span class='macro'>!</span>(<span class='ident'>le</span>, <span class='ident'>u64</span>, <span class='number'>8</span>, <span class='ident'>from_le</span>, <span class='ident'>to_le</span>, <span class='string'>&quot;little&quot;</span>, <span class='string'>&quot;big&quot;</span>); }
 
 <span class='kw'>mod</span> <span class='ident'>tests</span>;
 </pre>

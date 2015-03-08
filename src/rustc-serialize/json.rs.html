@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/Users/ajr/.cargo/git/checkouts/rustc-serialize-bdc70357aa712c7d/master/src/json.rs`.">
+    <meta name="description" content="Source to the Rust file `/Users/ajr/.cargo/registry/src/github.com-1ecc6299db9ec823/rustc-serialize-0.3.1/src/json.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>json.rs.html -- source</title>
@@ -3951,6 +3951,26 @@
 <span id="3909">3909</span>
 <span id="3910">3910</span>
 <span id="3911">3911</span>
+<span id="3912">3912</span>
+<span id="3913">3913</span>
+<span id="3914">3914</span>
+<span id="3915">3915</span>
+<span id="3916">3916</span>
+<span id="3917">3917</span>
+<span id="3918">3918</span>
+<span id="3919">3919</span>
+<span id="3920">3920</span>
+<span id="3921">3921</span>
+<span id="3922">3922</span>
+<span id="3923">3923</span>
+<span id="3924">3924</span>
+<span id="3925">3925</span>
+<span id="3926">3926</span>
+<span id="3927">3927</span>
+<span id="3928">3928</span>
+<span id="3929">3929</span>
+<span id="3930">3930</span>
+<span id="3931">3931</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -4204,7 +4224,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::<span class='ident'>Index</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>FromStr</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>string</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>char</span>, <span class='ident'>f64</span>, <span class='ident'>fmt</span>, <span class='ident'>old_io</span>, <span class='ident'>num</span>, <span class='ident'>str</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>char</span>, <span class='ident'>f64</span>, <span class='ident'>fmt</span>, <span class='ident'>io</span>, <span class='ident'>num</span>, <span class='ident'>str</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>;
 <span class='kw'>use</span> <span class='ident'>unicode</span>::<span class='ident'>str</span> <span class='kw'>as</span> <span class='ident'>unicode_str</span>;
 <span class='kw'>use</span> <span class='ident'>unicode</span>::<span class='ident'>str</span>::<span class='ident'>Utf16Item</span>;
@@ -4254,11 +4274,11 @@
     <span class='ident'>NotUtf8</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Debug</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>ParserError</span> {
     <span class='doccomment'>/// msg, line, col</span>
     <span class='ident'>SyntaxError</span>(<span class='ident'>ErrorCode</span>, <span class='ident'>usize</span>, <span class='ident'>usize</span>),
-    <span class='ident'>IoError</span>(<span class='ident'>old_io</span>::<span class='ident'>IoErrorKind</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>),
+    <span class='ident'>IoError</span>(<span class='ident'>io</span>::<span class='ident'>Error</span>),
 }
 
 <span class='comment'>// Builder and Parser have the same errors.</span>
@@ -4270,7 +4290,8 @@
     <span class='ident'>ExpectedError</span>(<span class='ident'>string</span>::<span class='ident'>String</span>, <span class='ident'>string</span>::<span class='ident'>String</span>),
     <span class='ident'>MissingFieldError</span>(<span class='ident'>string</span>::<span class='ident'>String</span>),
     <span class='ident'>UnknownVariantError</span>(<span class='ident'>string</span>::<span class='ident'>String</span>),
-    <span class='ident'>ApplicationError</span>(<span class='ident'>string</span>::<span class='ident'>String</span>)
+    <span class='ident'>ApplicationError</span>(<span class='ident'>string</span>::<span class='ident'>String</span>),
+    <span class='ident'>EOF</span>,
 }
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Debug</span>)]</span>
@@ -4329,8 +4350,8 @@
     }
 }
 
-<span class='kw'>fn</span> <span class='ident'>io_error_to_error</span>(<span class='ident'>io</span>: <span class='ident'>old_io</span>::<span class='ident'>IoError</span>) <span class='op'>-&gt;</span> <span class='ident'>ParserError</span> {
-    <span class='ident'>IoError</span>(<span class='ident'>io</span>.<span class='ident'>kind</span>, <span class='ident'>io</span>.<span class='ident'>desc</span>)
+<span class='kw'>fn</span> <span class='ident'>io_error_to_error</span>(<span class='ident'>err</span>: <span class='ident'>io</span>::<span class='ident'>Error</span>) <span class='op'>-&gt;</span> <span class='ident'>ParserError</span> {
+    <span class='ident'>IoError</span>(<span class='ident'>err</span>)
 }
 
 <span class='kw'>impl</span> <span class='ident'>StdError</span> <span class='kw'>for</span> <span class='ident'>DecoderError</span> {
@@ -4872,11 +4893,15 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>Json</span> {
-    <span class='doccomment'>/// Decodes a json value from an `&amp;mut old_io::Reader`</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_reader</span>(<span class='ident'>rdr</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>old_io</span>::<span class='ident'>Reader</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>BuilderError</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>contents</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>rdr</span>.<span class='ident'>read_to_end</span>() {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>c</span>)  <span class='op'>=&gt;</span> <span class='ident'>c</span>,
-            <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>io_error_to_error</span>(<span class='ident'>e</span>))
+    <span class='doccomment'>/// Decodes a json value from an `&amp;mut io::Read`</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_reader</span>(<span class='ident'>rdr</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>io</span>::<span class='ident'>Read</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>BuilderError</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>contents</span> <span class='op'>=</span> {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
+            <span class='kw'>match</span> <span class='ident'>rdr</span>.<span class='ident'>read_to_end</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>c</span>) {
+                <span class='prelude-val'>Ok</span>(<span class='ident'>c</span>)  <span class='op'>=&gt;</span> <span class='ident'>c</span>,
+                <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>io_error_to_error</span>(<span class='ident'>e</span>))
+            }
+            <span class='ident'>c</span>
         };
         <span class='kw'>let</span> <span class='ident'>s</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>str</span>::<span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='ident'>contents</span>).<span class='ident'>ok</span>() {
             <span class='prelude-val'>Some</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>,
@@ -5430,7 +5455,6 @@
 
     <span class='kw'>fn</span> <span class='ident'>parse_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u64</span>, <span class='ident'>ParserError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>accum</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='ident'>last_accum</span> <span class='op'>=</span> <span class='number'>0</span>; <span class='comment'>// necessary to detect overflow.</span>
 
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>ch_or_null</span>() {
             <span class='string'>&#39;0&#39;</span> <span class='op'>=&gt;</span> {
@@ -5446,11 +5470,16 @@
                 <span class='kw'>while</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>eof</span>() {
                     <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>ch_or_null</span>() {
                         <span class='ident'>c</span> <span class='kw-2'>@</span> <span class='string'>&#39;0&#39;</span> ... <span class='string'>&#39;9&#39;</span> <span class='op'>=&gt;</span> {
-                            <span class='ident'>accum</span> <span class='op'>*=</span> <span class='number'>10</span>;
-                            <span class='ident'>accum</span> <span class='op'>+=</span> (<span class='ident'>c</span> <span class='kw'>as</span> <span class='ident'>u64</span>) <span class='op'>-</span> (<span class='string'>&#39;0&#39;</span> <span class='kw'>as</span> <span class='ident'>u64</span>);
-
-                            <span class='comment'>// Detect overflow by comparing to the last value.</span>
-                            <span class='kw'>if</span> <span class='ident'>accum</span> <span class='op'>&lt;=</span> <span class='ident'>last_accum</span> { <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>error</span>(<span class='ident'>InvalidNumber</span>); }
+                            <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>try_or_invalid</span> {
+                                (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>: <span class='ident'>expr</span>) <span class='op'>=&gt;</span> {
+                                    <span class='kw'>match</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span> {
+                                        <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
+                                        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>error</span>(<span class='ident'>InvalidNumber</span>)
+                                    }
+                                }
+                            }
+                            <span class='ident'>accum</span> <span class='op'>=</span> <span class='macro'>try_or_invalid</span><span class='macro'>!</span>(<span class='ident'>accum</span>.<span class='ident'>checked_mul</span>(<span class='number'>10</span>));
+                            <span class='ident'>accum</span> <span class='op'>=</span> <span class='macro'>try_or_invalid</span><span class='macro'>!</span>(<span class='ident'>accum</span>.<span class='ident'>checked_add</span>((<span class='ident'>c</span> <span class='kw'>as</span> <span class='ident'>u64</span>) <span class='op'>-</span> (<span class='string'>&#39;0&#39;</span> <span class='kw'>as</span> <span class='ident'>u64</span>)));
 
                             <span class='self'>self</span>.<span class='ident'>bump</span>();
                         }
@@ -5530,7 +5559,7 @@
 
     <span class='kw'>fn</span> <span class='ident'>decode_hex_escape</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u16</span>, <span class='ident'>ParserError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='number'>016</span>;
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='number'>0</span>;
         <span class='kw'>while</span> <span class='ident'>i</span> <span class='op'>&lt;</span> <span class='number'>4</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>eof</span>() {
             <span class='self'>self</span>.<span class='ident'>bump</span>();
             <span class='ident'>n</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>ch_or_null</span>() {
@@ -5859,7 +5888,7 @@
         <span class='self'>self</span>.<span class='ident'>bump</span>();
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>token</span> {
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {}
-            <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> { <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>); }
+            <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='kw-2'>ref</span> <span class='ident'>e</span>)) <span class='op'>=&gt;</span> { <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>clone</span>()); }
             <span class='kw-2'>ref</span> <span class='ident'>tok</span> <span class='op'>=&gt;</span> { <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;unexpected token {:?}&quot;</span>, <span class='ident'>tok</span>.<span class='ident'>clone</span>()); }
         }
         <span class='ident'>result</span>
@@ -5881,7 +5910,7 @@
                 <span class='ident'>swap</span>(<span class='ident'>s</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>temp</span>);
                 <span class='prelude-val'>Ok</span>(<span class='ident'>Json</span>::<span class='ident'>String</span>(<span class='ident'>temp</span>))
             }
-            <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>),
+            <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='kw-2'>ref</span> <span class='ident'>e</span>)) <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>clone</span>()),
             <span class='prelude-val'>Some</span>(<span class='ident'>ArrayStart</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>build_array</span>(),
             <span class='prelude-val'>Some</span>(<span class='ident'>ObjectStart</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>build_object</span>(),
             <span class='prelude-val'>Some</span>(<span class='ident'>ObjectEnd</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>parser</span>.<span class='ident'>error</span>(<span class='ident'>InvalidSyntax</span>),
@@ -5914,7 +5943,7 @@
         <span class='kw'>loop</span> {
             <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>token</span> {
                 <span class='prelude-val'>Some</span>(<span class='ident'>ObjectEnd</span>) <span class='op'>=&gt;</span> { <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Json</span>::<span class='ident'>Object</span>(<span class='ident'>values</span>)); }
-                <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> { <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>); }
+                <span class='prelude-val'>Some</span>(<span class='ident'>Error</span>(<span class='kw-2'>ref</span> <span class='ident'>e</span>)) <span class='op'>=&gt;</span> { <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>clone</span>()); }
                 <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> { <span class='kw'>break</span>; }
                 _ <span class='op'>=&gt;</span> {}
             }
@@ -5945,21 +5974,21 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>Decoder</span> {
-    <span class='kw'>fn</span> <span class='ident'>pop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Json</span> {
-        <span class='self'>self</span>.<span class='ident'>stack</span>.<span class='ident'>pop</span>().<span class='ident'>unwrap</span>()
+    <span class='kw'>fn</span> <span class='ident'>pop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>Json</span><span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>stack</span>.<span class='ident'>pop</span>().<span class='ident'>ok_or</span>(<span class='ident'>EOF</span>)
     }
 }
 
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>expect</span> {
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>:<span class='ident'>expr</span>, <span class='ident'>Null</span>) <span class='op'>=&gt;</span> ({
-        <span class='kw'>match</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span> {
+        <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>) {
             <span class='ident'>Json</span>::<span class='ident'>Null</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(()),
             <span class='ident'>other</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>ExpectedError</span>(<span class='string'>&quot;Null&quot;</span>.<span class='ident'>to_string</span>(),
                                        <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='ident'>other</span>)))
         }
     });
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>:<span class='ident'>ident</span>) <span class='op'>=&gt;</span> ({
-        <span class='kw'>match</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span> {
+        <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>) {
             <span class='ident'>Json</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>(<span class='ident'>v</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>v</span>),
             <span class='ident'>other</span> <span class='op'>=&gt;</span> {
                 <span class='prelude-val'>Err</span>(<span class='ident'>ExpectedError</span>(<span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>).<span class='ident'>to_string</span>(),
@@ -5972,7 +6001,7 @@
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>read_primitive</span> {
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> {
         <span class='kw'>fn</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span><span class='op'>&gt;</span> {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>pop</span>() {
+            <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>pop</span>()) {
                 <span class='ident'>Json</span>::<span class='ident'>I64</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>num</span>::<span class='ident'>cast</span>(<span class='ident'>f</span>) {
                     <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>f</span>),
                     <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>ExpectedError</span>(<span class='string'>&quot;Number&quot;</span>.<span class='ident'>to_string</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='ident'>f</span>))),
@@ -6015,7 +6044,7 @@
     <span class='kw'>fn</span> <span class='ident'>read_f32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>f32</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>read_f64</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span> <span class='kw'>as</span> <span class='ident'>f32</span>) }
 
     <span class='kw'>fn</span> <span class='ident'>read_f64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>f64</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>pop</span>() {
+        <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>pop</span>()) {
             <span class='ident'>Json</span>::<span class='ident'>I64</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>f</span> <span class='kw'>as</span> <span class='ident'>f64</span>),
             <span class='ident'>Json</span>::<span class='ident'>U64</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>f</span> <span class='kw'>as</span> <span class='ident'>f64</span>),
             <span class='ident'>Json</span>::<span class='ident'>F64</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>f</span>),
@@ -6063,7 +6092,7 @@
                                <span class='kw-2'>mut</span> <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>
         <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnMut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Decoder</span>, <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
     {
-        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>pop</span>() {
+        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>pop</span>()) {
             <span class='ident'>Json</span>::<span class='ident'>String</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>,
             <span class='ident'>Json</span>::<span class='ident'>Object</span>(<span class='kw-2'>mut</span> <span class='ident'>o</span>) <span class='op'>=&gt;</span> {
                 <span class='kw'>let</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>o</span>.<span class='ident'>remove</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;variant&quot;</span>.<span class='ident'>to_string</span>()) {
@@ -6128,7 +6157,7 @@
         <span class='ident'>F</span>: <span class='ident'>FnOnce</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Decoder</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
     {
         <span class='kw'>let</span> <span class='ident'>value</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>f</span>(<span class='self'>self</span>));
-        <span class='self'>self</span>.<span class='ident'>pop</span>();
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>pop</span>());
         <span class='prelude-val'>Ok</span>(<span class='ident'>value</span>)
     }
 
@@ -6200,7 +6229,7 @@
     <span class='kw'>fn</span> <span class='ident'>read_option</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='kw-2'>mut</span> <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span>
         <span class='ident'>F</span>: <span class='ident'>FnMut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Decoder</span>, <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>DecodeResult</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
     {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>pop</span>() {
+        <span class='kw'>match</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>pop</span>()) {
             <span class='ident'>Json</span>::<span class='ident'>Null</span> <span class='op'>=&gt;</span> <span class='ident'>f</span>(<span class='self'>self</span>, <span class='boolval'>false</span>),
             <span class='ident'>value</span> <span class='op'>=&gt;</span> { <span class='self'>self</span>.<span class='ident'>stack</span>.<span class='ident'>push</span>(<span class='ident'>value</span>); <span class='ident'>f</span>(<span class='self'>self</span>, <span class='boolval'>true</span>) }
         }
@@ -6819,6 +6848,7 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;1e+&quot;</span>), <span class='prelude-val'>Err</span>(<span class='ident'>SyntaxError</span>(<span class='ident'>InvalidNumber</span>, <span class='number'>1</span>, <span class='number'>4</span>)));
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;18446744073709551616&quot;</span>), <span class='prelude-val'>Err</span>(<span class='ident'>SyntaxError</span>(<span class='ident'>InvalidNumber</span>, <span class='number'>1</span>, <span class='number'>20</span>)));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;18446744073709551617&quot;</span>), <span class='prelude-val'>Err</span>(<span class='ident'>SyntaxError</span>(<span class='ident'>InvalidNumber</span>, <span class='number'>1</span>, <span class='number'>20</span>)));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;-9223372036854775809&quot;</span>), <span class='prelude-val'>Err</span>(<span class='ident'>SyntaxError</span>(<span class='ident'>InvalidNumber</span>, <span class='number'>1</span>, <span class='number'>21</span>)));
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;3&quot;</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>U64</span>(<span class='number'>3</span>)));
@@ -7314,7 +7344,6 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_encode_hashmap_with_numeric_key</span>() {
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>from_utf8</span>;
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>old_io</span>::<span class='ident'>Writer</span>;
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hm</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>bool</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
         <span class='ident'>hm</span>.<span class='ident'>insert</span>(<span class='number'>1</span>, <span class='boolval'>true</span>);
@@ -7330,7 +7359,6 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_prettyencode_hashmap_with_numeric_key</span>() {
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>from_utf8</span>;
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>old_io</span>::<span class='ident'>Writer</span>;
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hm</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>bool</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
         <span class='ident'>hm</span>.<span class='ident'>insert</span>(<span class='number'>1</span>, <span class='boolval'>true</span>);
@@ -7797,6 +7825,18 @@
             <span class='ident'>EncoderError</span>::<span class='ident'>BadHashmapKey</span> <span class='op'>=&gt;</span> (),
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expected bad hash map key&quot;</span>)
         }
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>test_bad_json_stack_depleted</span>() {
+        <span class='kw'>use</span> <span class='ident'>json</span>;
+        <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>RustcDecodable</span>)]</span>
+        <span class='kw'>enum</span> <span class='ident'>ChatEvent</span> {
+            <span class='ident'>Variant</span>(<span class='ident'>i32</span>)
+        }
+        <span class='kw'>let</span> <span class='ident'>serialized</span> <span class='op'>=</span> <span class='string'>&quot;{\&quot;variant\&quot;: \&quot;Variant\&quot;, \&quot;fields\&quot;: []}&quot;</span>;
+        <span class='kw'>let</span> <span class='ident'>r</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>ChatEvent</span>, _<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>json</span>::<span class='ident'>decode</span>(<span class='ident'>serialized</span>);
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>r</span>.<span class='ident'>unwrap_err</span>() <span class='op'>==</span> <span class='ident'>EOF</span>);
     }
 
     <span class='attribute'>#[<span class='ident'>bench</span>]</span>
