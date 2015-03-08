@@ -191,13 +191,16 @@ pub mod ops {
             }
         }
     }
-    
-    /// This function can be easily implemented with Intel SHA intruction set extensions.
+
+    /// There are no plans for hardware implementations at this time, 
+    /// but this function can be easily implemented with some kind of
+    /// SIMD assistance.
     ///
     /// ```ignore
     /// {
-    ///     let temp = sha512load(work[2], work[3]);
-    ///     sha512msg2(sha512msg1(work[0], work[1]) + temp, work[3])
+    ///     // this is the core expression
+    ///     let temp = sha512load(work[4], work[5]);
+    ///     sha512msg(work[0], work[1], temp, work[7]);
     /// }
     /// ```
     #[inline]
@@ -208,24 +211,32 @@ pub mod ops {
         sha512_expand_round!(w, t + 3);
     }
     
-    /// This function can be easily implemented with Intel SHA intruction set extensions.
+    /// There are no plans for hardware implementations at this time, 
+    /// but this function can be easily implemented with some kind of
+    /// SIMD assistance.
     ///
     /// ```ignore
     /// {
-    ///     let abcd = u64x4(a, b, e, f);
-    ///     let cdgh = u64x4(c, d, g, h);
+    ///     // this is to illustrate the data order
+    ///     let ae = u64x2(a, e);
+    ///     let bf = u64x2(b, f);
+    ///     let cg = u64x2(c, g);
+    ///     let dh = u64x2(d, h);
     ///
-    ///     cdgh = sha512rnds2(cdgh, abef, work);
-    ///     abef = sha512rnds2(abef, cdgh, sha512swap(work));
+    ///     // this is the core expression
+    ///     dh = sha512rnd(ae, bf, cg, dh, work[0]);
+    ///     cg = sha512rnd(dh, ae, bf, cg, work[1]);
+    ///     bf = sha512rnd(cg, dh, ae, bf, work[2]);
+    ///     ae = sha512rnd(bf, cg, dh, ae, work[3]);
     ///
-    ///     a = abef.0;
-    ///     b = abef.1;
-    ///     c = cdgh.0;
-    ///     d = cdgh.1;
-    ///     e = abef.2;
-    ///     f = abef.3;
-    ///     g = cdgh.2;
-    ///     h = cdgh.3;
+    ///     a = ae.0;
+    ///     b = bf.0;
+    ///     c = cg.0;
+    ///     d = dh.0;
+    ///     e = ae.1;
+    ///     f = bf.1;
+    ///     g = cg.1;
+    ///     h = dh.1;
     /// }
     /// ```
     #[inline]
@@ -238,6 +249,7 @@ pub mod ops {
         *state = [e, f, g, h, a, b, c, d];
     }
     
+    /// TODO
     #[inline]
     pub fn expand_round_x16(w: &mut [u64; 16]) {
         expand_round_x4(w, 0);
@@ -245,17 +257,12 @@ pub mod ops {
         expand_round_x4(w, 8);
         expand_round_x4(w, 12);
     }
-
     
+    /// TODO
     #[inline]
     pub fn digest_round_x16(state: &mut [u64; 8], k: [u64; 16], w: [u64; 16]) {
         macro_rules! as_simd {
-            ($x:expr) => {
-                {
-                    let (y, _): (&[u64; 4], usize) =
-                        unsafe {::std::mem::transmute($x)}; *y
-                }
-            }
+            ($x:expr) => {{let (y, _): (&[u64; 4], usize) = unsafe {::std::mem::transmute($x)}; *y}}
         }
 
         digest_round_x4(state, as_simd!(&k[0..4]), as_simd!(&w[0..4]));

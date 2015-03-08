@@ -4,8 +4,6 @@
 // collections hash asm core libc
 
 extern crate "rustc-serialize" as serialize;
-extern crate endian;
-//extern crate libc;
 extern crate test;
 extern crate bswap;
 
