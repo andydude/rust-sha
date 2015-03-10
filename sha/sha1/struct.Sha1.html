@@ -26,7 +26,7 @@
 
     <section class="sidebar">
         
-        <p class='location'><a href='../index.html'>sha</a>::<wbr><a href='index.html'>sha1</a></p><div class='block mod'><h2>Modules</h2><a class='mod ' href='consts/index.html' title='TODO'>consts</a><a class='mod ' href='ops/index.html' title='TODO: docs'>ops</a></div><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.Sha1.html' title='TODO: docs'>Sha1</a></div>
+        <p class='location'><a href='../index.html'>sha</a>::<wbr><a href='index.html'>sha1</a></p><div class='block mod'><h2>Modules</h2><a class='mod ' href='consts/index.html' title='TODO'>consts</a><a class='mod ' href='ops/index.html' title='TODO: docs'>ops</a></div><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.Sha1.html' title='`Sha1` structure interface to the SHA-1 message digest algorithm.'>Sha1</a></div>
     </section>
 
     <nav class="sub">
@@ -43,8 +43,64 @@
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>sha</a>::<wbr><a href='index.html'>sha1</a>::<wbr><a class='struct' href=''>Sha1</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-597' href='../../src/sha/sha1.rs.html#3'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct Sha1(pub <a href='http://doc.rust-lang.org/nightly/std/primitive.slice.html'>[<a href='http://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>; 5]</a>, _);</pre><div class='docblock'><p>TODO: docs</p>
+        </span><a id='src-614' href='../../src/sha/sha1.rs.html#62'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Sha1(pub <a href='http://doc.rust-lang.org/nightly/std/primitive.slice.html'>[<a href='http://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>; 5]</a>, _);</pre><div class='docblock'><p><code>Sha1</code> structure interface to the SHA-1 message digest algorithm.</p>
+
+<h1 id="examples" class='section-header'><a
+                           href="#examples">Examples</a></h1>
+<p>The following sections are some typical examples illustrating the use of the <code>Sha1</code> structure.</p>
+
+<h2 id="example-digesting-the-empty-message-with-sha-1" class='section-header'><a
+                           href="#example-digesting-the-empty-message-with-sha-1">Example digesting the empty message with SHA-1</a></h2><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>sha1</span>::<span class='ident'>Sha1</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>utils</span>::{<span class='ident'>Digest</span>, <span class='ident'>DigestExt</span>};
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Sha1</span>::<span class='ident'>default</span>().<span class='ident'>digest</span>(<span class='string'>&quot;&quot;</span>.<span class='ident'>as_bytes</span>()).<span class='ident'>to_hex</span>().<span class='ident'>as_slice</span>(),
+           <span class='string'>&quot;da39a3ee5e6b4b0d3255bfef95601890afd80709&quot;</span>);
+</pre>
+
+<h2 id="example-digesting-the-message-&quot;abc&quot;-with-sha-1." class='section-header'><a
+                           href="#example-digesting-the-message-&quot;abc&quot;-with-sha-1.">Example digesting the message <code>&quot;abc&quot;</code> with SHA-1.</a></h2><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>sha1</span>::<span class='ident'>Sha1</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>utils</span>::{<span class='ident'>Digest</span>, <span class='ident'>DigestExt</span>};
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Sha1</span>::<span class='ident'>default</span>().<span class='ident'>digest</span>(<span class='string'>&quot;abc&quot;</span>.<span class='ident'>as_bytes</span>()).<span class='ident'>to_hex</span>().<span class='ident'>as_slice</span>(),
+           <span class='string'>&quot;a9993e364706816aba3e25717850c26c9cd0d89d&quot;</span>);
+</pre>
+
+<h2 id="example-digesting-the-message-with-one-million-repetitions-of-&quot;a&quot;-with-sha-1." class='section-header'><a
+                           href="#example-digesting-the-message-with-one-million-repetitions-of-&quot;a&quot;-with-sha-1.">Example digesting the message with one million repetitions of <code>&quot;a&quot;</code> with SHA-1.</a></h2><pre id='rust-example-rendered' class='rust '>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>utils</span>::<span class='ident'>ReadPad</span>;
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>sha</span>::<span class='ident'>sha1</span>;
+
+{
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state</span>: [<span class='ident'>u32</span>; <span class='number'>5</span>] <span class='op'>=</span> <span class='ident'>sha1</span>::<span class='ident'>consts</span>::<span class='ident'>H</span>;
+    <span class='kw'>let</span> <span class='ident'>block</span>: [<span class='ident'>u8</span>; <span class='number'>64</span>] <span class='op'>=</span> [<span class='number'>0x61</span>; <span class='number'>64</span>]; <span class='comment'>// &quot;a&quot;</span>
+     
+    <span class='comment'>// 15625 blocks of 64 bytes each is 1 million bytes.</span>
+    <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span> .. <span class='number'>15625</span> <span class='op'>-</span> <span class='number'>1</span> {
+        <span class='ident'>sha1</span>::<span class='ident'>ops</span>::<span class='ident'>digest_block</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state</span>, <span class='kw-2'>&amp;</span><span class='ident'>block</span>[..]);
+    }
+
+    <span class='comment'>// incremental digest requires that you do the padding</span>
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>pad_blocks</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>block</span>.<span class='ident'>to_vec</span>();
+    <span class='ident'>sha1</span>::<span class='ident'>ops</span>::<span class='ident'>pad</span>(<span class='number'>1000000</span>).<span class='ident'>read_pad</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>pad_blocks</span>);
+    <span class='kw'>for</span> <span class='ident'>pad_block</span> <span class='kw'>in</span> (<span class='kw-2'>&amp;</span><span class='ident'>pad_blocks</span>[..]).<span class='ident'>chunks</span>(<span class='number'>64</span>) {
+        <span class='ident'>sha1</span>::<span class='ident'>ops</span>::<span class='ident'>digest_block</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state</span>, <span class='kw-2'>&amp;</span><span class='ident'>pad_block</span>[..]);
+    }
+
+    <span class='comment'>// serialize the digest state</span>
+    <span class='kw'>let</span> <span class='ident'>hash</span>: <span class='ident'>String</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:08x}{:08x}{:08x}{:08x}{:08x}&quot;</span>, 
+                               <span class='ident'>state</span>[<span class='number'>0</span>], <span class='ident'>state</span>[<span class='number'>1</span>], <span class='ident'>state</span>[<span class='number'>2</span>], 
+                               <span class='ident'>state</span>[<span class='number'>3</span>], <span class='ident'>state</span>[<span class='number'>4</span>]);
+
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>hash</span>.<span class='ident'>as_slice</span>(),
+               <span class='string'>&quot;34aa973cd4c4daa4f61eeb2bdbad27316534016f&quot;</span>);
+}
+</pre>
 </div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../sha/sha1/struct.Sha1.html' title='sha::sha1::Sha1'>Sha1</a></code></h3><div class='impl-items'><h4 id='method.default' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../sha/sha1/struct.Sha1.html' title='sha::sha1::Sha1'>Sha1</a></code></h4>
 <div class='docblock'><p>Construct a default <code>Sha1</code> object.</p>
 </div></div><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl <a class='trait' href='../../sha/utils/trait.Reset.html' title='sha::utils::Reset'>Reset</a> for <a class='struct' href='../../sha/sha1/struct.Sha1.html' title='sha::sha1::Sha1'>Sha1</a></code></h3><div class='impl-items'><h4 id='method.reset' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.reset' class='fnname'>reset</a>(&amp;mut self)</code></h4>

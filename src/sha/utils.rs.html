@@ -375,6 +375,13 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
@@ -518,6 +525,13 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>suffix</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>block_len</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>StdPad</span> {
         <span class='ident'>StdPad</span> {
             <span class='ident'>prefix</span>: <span class='number'>0x80</span>,
+            <span class='ident'>suffix</span>: <span class='ident'>suffix</span>,
+            <span class='ident'>block_len</span>: <span class='ident'>block_len</span>,
+        }
+    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>with_prefix</span>(<span class='ident'>prefix</span>: <span class='ident'>u8</span>, <span class='ident'>suffix</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>block_len</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>StdPad</span> {
+        <span class='ident'>StdPad</span> {
+            <span class='ident'>prefix</span>: <span class='ident'>prefix</span>,
             <span class='ident'>suffix</span>: <span class='ident'>suffix</span>,
             <span class='ident'>block_len</span>: <span class='ident'>block_len</span>,
         }

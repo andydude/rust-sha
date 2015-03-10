@@ -786,9 +786,6 @@
 <span id="744">744</span>
 <span id="745">745</span>
 <span id="746">746</span>
-<span id="747">747</span>
-<span id="748">748</span>
-<span id="749">749</span>
 </pre><pre class='rust '>
 <span class='doccomment'>/// TODO: docs</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
@@ -806,7 +803,7 @@
                 <span class='ident'>DigestExt</span>,
                 <span class='ident'>ReadPadBlocksExt</span>,
                 <span class='ident'>StdPad</span>};
-    
+
     <span class='kw'>impl</span> <span class='ident'>Default</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {
 
         <span class='doccomment'>/// Construct a default `Sha512` object.</span>
@@ -825,17 +822,17 @@
     }
 
     <span class='kw'>impl</span> <span class='ident'>Write</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {
-        
+
         <span class='doccomment'>/// Write to buffer</span>
         <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
             <span class='ident'>Write</span>::<span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='number'>1</span>, <span class='ident'>buf</span>)
         }
-        
+
         <span class='doccomment'>/// Digest buffer</span>
         <span class='kw'>fn</span> <span class='ident'>flush</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='number'>0</span>;
             <span class='kw'>let</span> <span class='kw-2'>ref</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='number'>1</span>;
-            
+
             <span class='kw'>fn</span> <span class='ident'>pad</span>(<span class='ident'>len</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>StdPad</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>suffix</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0u8</span>; <span class='number'>16</span>];
                 <span class='ident'>beu64</span>::<span class='ident'>encode</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>suffix</span>[<span class='number'>8</span>..], <span class='number'>8</span><span class='op'>*</span><span class='ident'>len</span> <span class='kw'>as</span> <span class='ident'>u64</span>);
@@ -845,12 +842,12 @@
             <span class='kw'>for</span> <span class='ident'>block</span> <span class='kw'>in</span> <span class='ident'>buf</span>.<span class='ident'>pad_blocks</span>(<span class='number'>128</span>, <span class='op'>|</span><span class='ident'>len</span>: <span class='ident'>usize</span><span class='op'>|</span> <span class='ident'>pad</span>(<span class='ident'>len</span>)) {
                 <span class='ident'>super</span>::<span class='ident'>ops</span>::<span class='ident'>digest_block</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state</span>, <span class='kw-2'>&amp;</span><span class='ident'>block</span>);
             }
-            
+
             <span class='self'>self</span>.<span class='number'>0</span> <span class='op'>=</span> <span class='ident'>state</span>;
             <span class='prelude-val'>Ok</span>(())
         }
     }
-    
+
     <span class='kw'>impl</span> <span class='ident'>Read</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {
 
         <span class='doccomment'>/// Read state as big-endian</span>
@@ -862,14 +859,14 @@
     }
 
     <span class='kw'>impl</span> <span class='ident'>Hasher</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {
-    
+
         <span class='doccomment'>/// Get the first 8 bytes of the state</span>
         <span class='kw'>fn</span> <span class='ident'>finish</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>h</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>clone</span>();
             <span class='ident'>h</span>.<span class='ident'>flush</span>().<span class='ident'>unwrap</span>();
             <span class='ident'>h</span>.<span class='number'>0</span>[<span class='number'>0</span>]
         }
-    
+
         <span class='doccomment'>/// Write to buffer</span>
         <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
             <span class='ident'>Write</span>::<span class='ident'>write</span>(<span class='self'>self</span>, <span class='ident'>buf</span>).<span class='ident'>unwrap</span>();
@@ -877,7 +874,7 @@
     }
 
     <span class='kw'>impl</span> <span class='ident'>Digest</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {}
-    
+
     <span class='kw'>impl</span> <span class='ident'>DigestExt</span> <span class='kw'>for</span> <span class='ident'>Sha512</span> {
         <span class='kw'>fn</span> <span class='ident'>default_len</span>() <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
             <span class='kw'>return</span> <span class='number'>64</span>;
@@ -951,7 +948,7 @@
     <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>bool3ary_232</span> {
         (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>b</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>c</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> ((<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span> <span class='kw-2'>&amp;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>b</span>) <span class='op'>^</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span> <span class='kw-2'>&amp;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>c</span>) <span class='op'>^</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>b</span> <span class='kw-2'>&amp;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>c</span>))
     }
-    
+
     <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>sha512_expand_round</span> {
         (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>work</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> {
             {
@@ -964,7 +961,7 @@
             }
         }
     }
-    
+
     <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>sha512_digest_round</span> {
         (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>b</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>c</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>d</span>:<span class='ident'>ident</span>,
          <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>e</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>f</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>g</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>h</span>:<span class='ident'>ident</span>,
@@ -984,7 +981,7 @@
         }
     }
 
-    <span class='doccomment'>/// There are no plans for hardware implementations at this time, </span>
+    <span class='doccomment'>/// There are no plans for hardware implementations at this time,</span>
     <span class='doccomment'>/// but this function can be easily implemented with some kind of</span>
     <span class='doccomment'>/// SIMD assistance.</span>
     <span class='doccomment'>///</span>
@@ -1002,8 +999,8 @@
         <span class='macro'>sha512_expand_round</span><span class='macro'>!</span>(<span class='ident'>w</span>, <span class='ident'>t</span> <span class='op'>+</span> <span class='number'>2</span>);
         <span class='macro'>sha512_expand_round</span><span class='macro'>!</span>(<span class='ident'>w</span>, <span class='ident'>t</span> <span class='op'>+</span> <span class='number'>3</span>);
     }
-    
-    <span class='doccomment'>/// There are no plans for hardware implementations at this time, </span>
+
+    <span class='doccomment'>/// There are no plans for hardware implementations at this time,</span>
     <span class='doccomment'>/// but this function can be easily implemented with some kind of</span>
     <span class='doccomment'>/// SIMD assistance.</span>
     <span class='doccomment'>///</span>
@@ -1016,10 +1013,10 @@
     <span class='doccomment'>///     let dh = u64x2(d, h);</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>///     // this is the core expression</span>
-    <span class='doccomment'>///     dh = sha512rnd(ae, bf, cg, dh, work[0]);</span>
-    <span class='doccomment'>///     cg = sha512rnd(dh, ae, bf, cg, work[1]);</span>
-    <span class='doccomment'>///     bf = sha512rnd(cg, dh, ae, bf, work[2]);</span>
-    <span class='doccomment'>///     ae = sha512rnd(bf, cg, dh, ae, work[3]);</span>
+    <span class='doccomment'>///     dh = sha512rnd(dh, ae, bf, cg, work[0]);</span>
+    <span class='doccomment'>///     cg = sha512rnd(cg, dh, ae, bf, work[1]);</span>
+    <span class='doccomment'>///     bf = sha512rnd(bf, cg, dh, ae, work[2]);</span>
+    <span class='doccomment'>///     ae = sha512rnd(ae, bf, cg, dh, work[3]);</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>///     a = ae.0;</span>
     <span class='doccomment'>///     b = bf.0;</span>
@@ -1040,7 +1037,7 @@
         <span class='macro'>sha512_digest_round</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='ident'>g</span>, <span class='ident'>h</span>, <span class='ident'>a</span>, <span class='ident'>b</span>, <span class='ident'>c</span>, <span class='ident'>d</span>, <span class='ident'>e</span>, <span class='ident'>k</span>[<span class='number'>3</span>], <span class='ident'>w</span>[<span class='number'>3</span>]);
         <span class='op'>*</span><span class='ident'>state</span> <span class='op'>=</span> [<span class='ident'>e</span>, <span class='ident'>f</span>, <span class='ident'>g</span>, <span class='ident'>h</span>, <span class='ident'>a</span>, <span class='ident'>b</span>, <span class='ident'>c</span>, <span class='ident'>d</span>];
     }
-    
+
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand_round_x16</span>(<span class='ident'>w</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u64</span>; <span class='number'>16</span>]) {
@@ -1049,7 +1046,7 @@
         <span class='ident'>expand_round_x4</span>(<span class='ident'>w</span>, <span class='number'>8</span>);
         <span class='ident'>expand_round_x4</span>(<span class='ident'>w</span>, <span class='number'>12</span>);
     }
-    
+
     <span class='doccomment'>/// TODO</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>digest_round_x16</span>(<span class='ident'>state</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u64</span>; <span class='number'>8</span>], <span class='ident'>k</span>: [<span class='ident'>u64</span>; <span class='number'>16</span>], <span class='ident'>w</span>: [<span class='ident'>u64</span>; <span class='number'>16</span>]) {
@@ -1069,7 +1066,7 @@
         <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>consts</span>::<span class='ident'>K</span>;
         <span class='kw'>let</span> <span class='ident'>state2</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>state</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>w</span>: [<span class='ident'>u64</span>; <span class='number'>16</span>] <span class='op'>=</span> [<span class='number'>0</span>; <span class='number'>16</span>];
-        
+
         <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>as_simd_array</span> {
             (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>x</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> {{<span class='kw'>let</span> (<span class='ident'>y</span>, _): (<span class='kw-2'>&amp;</span>[<span class='ident'>u64</span>; <span class='number'>16</span>], <span class='ident'>usize</span>) <span class='op'>=</span> <span class='kw'>unsafe</span> {<span class='ident'>transmute</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>x</span>)}; <span class='op'>*</span><span class='ident'>y</span>}}
         }
@@ -1090,44 +1087,41 @@
                 .<span class='ident'>wrapping_add</span>(<span class='ident'>state2</span>[<span class='ident'>i</span>]);
         }
     }
-    
+
     <span class='doccomment'>/// TODO</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>digest</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> [<span class='ident'>u64</span>; <span class='number'>8</span>] {
         <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
         <span class='kw'>use</span> <span class='ident'>utils</span>::<span class='ident'>Digest</span>;
-        
+
         <span class='ident'>super</span>::<span class='ident'>Sha512</span>::<span class='ident'>default</span>().<span class='ident'>digest</span>(<span class='ident'>buf</span>).<span class='number'>0</span>
     }
 }
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>bswap</span>::<span class='ident'>beu64</span>;
     <span class='kw'>use</span> <span class='ident'>serialize</span>::<span class='ident'>hex</span>::<span class='ident'>ToHex</span>;
     <span class='kw'>use</span> <span class='ident'>test</span>::<span class='ident'>Bencher</span>;
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>Sha512</span>;
-    <span class='kw'>use</span> <span class='ident'>utils</span>::{<span class='ident'>Reset</span>, <span class='ident'>Digest</span>, <span class='ident'>DigestExt</span>};
+    <span class='kw'>use</span> <span class='ident'>utils</span>::{<span class='ident'>Digest</span>, <span class='ident'>DigestExt</span>};
 
     <span class='comment'>//</span>
     <span class='comment'>// Helper functions</span>
     <span class='comment'>//</span>
 
-    <span class='kw'>fn</span> <span class='ident'>digest_block</span>(<span class='ident'>state</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u64</span>; <span class='number'>8</span>], <span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
-        <span class='ident'>super</span>::<span class='ident'>ops</span>::<span class='ident'>digest_block</span>(<span class='ident'>state</span>, <span class='ident'>buf</span>);
-    }
-    
+    <span class='comment'>//fn digest_block(state: &amp;mut [u64; 8], buf: &amp;[u8]) {</span>
+    <span class='comment'>//    super::ops::digest_block(state, buf);</span>
+    <span class='comment'>//}</span>
+
     <span class='kw'>fn</span> <span class='ident'>digest</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>Sha512</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>h</span>: <span class='ident'>Sha512</span> <span class='op'>=</span> <span class='ident'>Default</span>::<span class='ident'>default</span>();
         <span class='ident'>h</span>.<span class='ident'>digest</span>(<span class='ident'>buf</span>);
         <span class='ident'>h</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>digest_to_bytes</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> {
-        <span class='ident'>digest</span>(<span class='ident'>buf</span>).<span class='ident'>to_bytes</span>()
-    }
+    <span class='comment'>//fn digest_to_bytes(buf: &amp;[u8]) -&gt; Vec&lt;u8&gt; {</span>
+    <span class='comment'>//    digest(buf).to_bytes()</span>
+    <span class='comment'>//}</span>
 
     <span class='kw'>fn</span> <span class='ident'>digest_to_hex</span>(<span class='ident'>msg</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
         <span class='ident'>digest</span>(<span class='kw-2'>&amp;</span><span class='ident'>msg</span>.<span class='ident'>as_bytes</span>()).<span class='ident'>to_hex</span>()
@@ -1158,7 +1152,7 @@
         <span class='kw'>let</span> <span class='ident'>digest</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='ident'>h</span>.<span class='ident'>finish</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0x309ecc489c12d6ebu64</span>, <span class='ident'>digest</span>);
     }
-   
+
     <span class='comment'>//</span>
     <span class='comment'>// Tests for `digest_to_hex`</span>
     <span class='comment'>//</span>
@@ -1278,34 +1272,34 @@
     <span class='comment'>//     let s = &quot;GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. &lt;http://fsf.org/&gt;&quot;;</span>
     <span class='comment'>//     assert_eq!(&quot;d33d14f2ea60beb394082598e05375cdd6ff8966315322c34b6faea80e7d5a7c&quot;, digest_to_hex(s).as_slice());</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_1k() {</span>
     <span class='comment'>//     let buf = [0x20; 1000];</span>
     <span class='comment'>//     let msg = str::from_utf8(&amp;buf[..]).unwrap();</span>
     <span class='comment'>//     assert_eq!(&quot;08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952&quot;, digest_to_hex(msg).as_slice());</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Tests for `digest_to_bytes`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_hello_bytes() {</span>
     <span class='comment'>//     let bytes = digest_to_bytes(&quot;hello world&quot;.as_bytes());</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     assert_eq!(b&quot;\xb9\x4d\x27\xb9\x93\x4d\x3e\x08\xa5\x2e\x52\xd7\xda\x7d\xab\xfa\xc4\x84\xef\xe3\x7a\x53\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9&quot;,</span>
     <span class='comment'>//                bytes.as_slice());</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Tests for `digest`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_hello_digest() {</span>
     <span class='comment'>//     let words: [u64; 8] = digest(&quot;hello world&quot;.as_bytes()).0;</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     assert_eq!(words[0], 0xb94d27b9);</span>
     <span class='comment'>//     assert_eq!(words[1], 0x934d3e08);</span>
     <span class='comment'>//     assert_eq!(words[2], 0xa52e52d7);</span>
@@ -1315,30 +1309,30 @@
     <span class='comment'>//     assert_eq!(words[6], 0x9088f7ac);</span>
     <span class='comment'>//     assert_eq!(words[7], 0xe2efcde9);</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Tests for `digest_block`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// fn make_empty_block() -&gt; Vec&lt;u8&gt; {</span>
     <span class='comment'>//     let mut block = vec![0u8; 16*4];</span>
     <span class='comment'>//     assert_eq!(block.len(), 16*4);</span>
     <span class='comment'>//     block[0] = 0x80u8;</span>
     <span class='comment'>//     block</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// fn make_hello_block() -&gt; Vec&lt;u8&gt; {</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     // this could use a concat_bytes!</span>
     <span class='comment'>//     static HELLO_BLOCK: &amp;&#39;static [u8] = b&quot;hello world\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x58&quot;;</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     let mut block: Vec&lt;u8&gt; = Vec::with_capacity(16*4);</span>
     <span class='comment'>//     unsafe { block.set_len(16*4) };</span>
     <span class='comment'>//     (&amp;mut block[..]).clone_from_slice(HELLO_BLOCK);</span>
     <span class='comment'>//     assert_eq!(block.len(), 16*4);</span>
     <span class='comment'>//     block</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_empty_block() {</span>
     <span class='comment'>//     use serialize::hex::ToHex;</span>
@@ -1352,7 +1346,7 @@
     <span class='comment'>//     assert_eq!(&quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;,</span>
     <span class='comment'>//                bytes.as_slice().to_hex());</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_hello_block() {</span>
     <span class='comment'>//     use serialize::hex::ToHex;</span>
@@ -1366,7 +1360,7 @@
     <span class='comment'>//     assert_eq!(&quot;b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9&quot;,</span>
     <span class='comment'>//                bytes.as_slice().to_hex());</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// pub fn bench_sha512_block(bh: &amp; mut Bencher) {</span>
     <span class='comment'>//     let mut state: [u64; 8] = [0; 8];</span>
@@ -1375,11 +1369,11 @@
     <span class='comment'>//     bh.iter( || { digest_block(&amp;mut state, block); });</span>
     <span class='comment'>//     bh.bytes = 64u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Benchmarks for `digest_bytes`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// fn bench_sha512_hello_block(b: &amp; mut Bencher) {</span>
     <span class='comment'>//     let mut state: [u64; 8] = [0; 8];</span>
@@ -1389,7 +1383,7 @@
     <span class='comment'>//     b.iter( || { digest_block(&amp;mut state, block) });</span>
     <span class='comment'>//     b.bytes = 64u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// fn bench_sha512_empty_block(b: &amp; mut Bencher) {</span>
     <span class='comment'>//     let mut state: [u64; 8] = [0; 8];</span>
@@ -1399,11 +1393,11 @@
     <span class='comment'>//     b.iter( || { digest_block(&amp;mut state, block) });</span>
     <span class='comment'>//     b.bytes = 64u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Benchmarks for `digest`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// fn bench_sha512_10(b: &amp; mut Bencher) {</span>
     <span class='comment'>//     let buf = [0x20u8; 10];</span>
@@ -1422,11 +1416,11 @@
     <span class='comment'>//     b.iter( || { digest(&amp;buf[..]); });</span>
     <span class='comment'>//     b.bytes = buf.len() as u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Benchmarks for `digest_to_bytes`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// fn bench_sha512_to_bytes_10(b: &amp; mut Bencher) {</span>
     <span class='comment'>//     let buf = [0x20u8; 10];</span>
@@ -1445,11 +1439,11 @@
     <span class='comment'>//     b.iter( || { digest_to_bytes(&amp;buf[..]); });</span>
     <span class='comment'>//     b.bytes = buf.len() as u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Benchmarks for `digest_to_hex`</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[bench]</span>
     <span class='comment'>// fn bench_sha512_to_hex_10(b: &amp; mut Bencher) {</span>
     <span class='comment'>//     let buf = [0x20u8; 10];</span>
@@ -1471,16 +1465,16 @@
     <span class='comment'>//     b.iter( || { digest_to_hex(msg); });</span>
     <span class='comment'>//     b.bytes = msg.len() as u64;</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// //</span>
     <span class='comment'>// // Test Structure</span>
     <span class='comment'>// //</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// struct Test {</span>
     <span class='comment'>//     input: &amp;&#39;static str,</span>
     <span class='comment'>//     output_str: &amp;&#39;static str,</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// fn make_test_list() -&gt; Vec&lt;Test&gt; {</span>
     <span class='comment'>//     // Examples from wikipedia</span>
     <span class='comment'>//     let wikipedia_tests = vec![</span>
@@ -1499,35 +1493,35 @@
     <span class='comment'>//     ];</span>
     <span class='comment'>//     wikipedia_tests</span>
     <span class='comment'>// }</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>// #[test]</span>
     <span class='comment'>// fn test_sha512_wikipedia() {</span>
-    <span class='comment'>// </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     let tests = make_test_list();</span>
     <span class='comment'>//     let mut h: Sha512 = Default::default();</span>
-    <span class='comment'>//     </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     // Test that it works when accepting the message all at once</span>
     <span class='comment'>//     for t in tests.iter() {</span>
     <span class='comment'>//         let out_str = h.digest(t.input.as_bytes()).to_hex();</span>
     <span class='comment'>//         assert_eq!(&amp;out_str[..], t.output_str);</span>
     <span class='comment'>//         h.reset();</span>
     <span class='comment'>//     }</span>
-    <span class='comment'>//     </span>
+    <span class='comment'>//</span>
     <span class='comment'>//     // Test that it works when accepting the message in pieces</span>
     <span class='comment'>//     for t in tests.iter() {</span>
     <span class='comment'>//         let len = t.input.len();</span>
     <span class='comment'>//         let mut left = len;</span>
-    <span class='comment'>//         </span>
+    <span class='comment'>//</span>
     <span class='comment'>//         while left &gt; 0 {</span>
     <span class='comment'>//             let take = (left + 1) / 2;</span>
     <span class='comment'>//             h.write((&amp;t.input[len - left..take + len - left]).as_bytes()).unwrap();</span>
     <span class='comment'>//             left = left - take;</span>
     <span class='comment'>//         }</span>
     <span class='comment'>//         h.flush().unwrap();</span>
-    <span class='comment'>//     </span>
+    <span class='comment'>//</span>
     <span class='comment'>//         let out_str = h.to_hex();</span>
     <span class='comment'>//         assert_eq!(&amp;out_str[..], t.output_str);</span>
-    <span class='comment'>//     </span>
+    <span class='comment'>//</span>
     <span class='comment'>//         h.reset();</span>
     <span class='comment'>//     }</span>
     <span class='comment'>// }</span>
