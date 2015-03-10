@@ -1,6 +1,6 @@
 [package]
 name = "sha"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
 license = "LGPL-3.0+"
 homepage = "https://andydude.github.io/rust-sha/sha/index.html"
