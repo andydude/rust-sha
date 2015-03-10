@@ -1,4 +1,63 @@
-/// TODO: docs
+/// `Sha1` structure interface to the SHA-1 message digest algorithm.
+///
+/// # Examples
+///
+/// The following sections are some typical examples illustrating the use of the `Sha1` structure.
+///
+/// ## Example digesting the empty message with SHA-1
+///
+/// ```rust
+/// use std::default::Default;
+/// use self::sha::sha1::Sha1;
+/// use self::sha::utils::{Digest, DigestExt};
+///
+/// assert_eq!(Sha1::default().digest("".as_bytes()).to_hex().as_slice(),
+///            "da39a3ee5e6b4b0d3255bfef95601890afd80709");
+/// ```
+///
+/// ## Example digesting the message `"abc"` with SHA-1.
+///
+/// ```rust
+/// use std::default::Default;
+/// use self::sha::sha1::Sha1;
+/// use self::sha::utils::{Digest, DigestExt};
+///
+/// assert_eq!(Sha1::default().digest("abc".as_bytes()).to_hex().as_slice(),
+///            "a9993e364706816aba3e25717850c26c9cd0d89d");
+/// ```
+///
+/// ## Example digesting the message with one million repetitions of `"a"` with SHA-1.
+///
+/// ```rust
+/// use std::default::Default;
+/// use self::sha::utils::ReadPad;
+/// use self::sha::sha1;
+///
+/// {
+///     let mut state: [u32; 5] = sha1::consts::H;
+///     let block: [u8; 64] = [0x61; 64]; // "a"
+///     
+///     // 15625 blocks of 64 bytes each is 1 million bytes.
+///     for _ in 0 .. 15625 - 1 {
+///         sha1::ops::digest_block(&mut state, &block[..]);
+///     }
+///
+///     // incremental digest requires that you do the padding
+///     let mut pad_blocks: Vec<u8> = block.to_vec();
+///     sha1::ops::pad(1000000).read_pad(&mut pad_blocks);
+///     for pad_block in (&pad_blocks[..]).chunks(64) {
+///         sha1::ops::digest_block(&mut state, &pad_block[..]);
+///     }
+///
+///     // serialize the digest state
+///     let hash: String = format!("{:08x}{:08x}{:08x}{:08x}{:08x}", 
+///                                state[0], state[1], state[2], 
+///                                state[3], state[4]);
+///
+///     assert_eq!(hash.as_slice(),
+///                "34aa973cd4c4daa4f61eeb2bdbad27316534016f");
+/// }
+/// ```
 #[derive(Clone)]
 pub struct Sha1(pub [u32; 5], Vec<u8>);
 
@@ -7,13 +66,12 @@ mod impls {
     use std::hash::Hasher;
     use std::io::prelude::*;
     use std::io;
-    use bswap::{beu32, beu64};
+    use bswap::beu32;
     use super::Sha1;
     use utils::{Reset,
                 Digest,
                 DigestExt,
-                ReadPadBlocksExt,
-                StdPad};
+                ReadPadBlocksExt};
 
     impl Default for Sha1 {
 
@@ -44,13 +102,7 @@ mod impls {
             let mut state = self.0;
             let ref buf = self.1;
 
-            fn pad(len: usize) -> StdPad {
-                let mut suffix = vec![0u8; 8];
-                beu64::encode(&mut suffix[..], 8*len as u64);
-                StdPad::new(suffix, 64)
-            }
-
-            for block in buf.pad_blocks(64, |len: usize| pad(len)) {
+            for block in buf.pad_blocks(64, super::ops::pad) {
                 super::ops::digest_block(&mut state, &block);
             }
 
@@ -120,7 +172,8 @@ pub mod consts {
 
 /// TODO: docs
 pub mod ops {
-    use bswap::beu32;
+    use bswap::{beu32, beu64};
+    use utils::StdPad;
 
     macro_rules! rotate_left {
         ($a:expr, $b:expr) => (($a << $b) ^ ($a >> (32 - $b)))
@@ -272,6 +325,12 @@ pub mod ops {
         use utils::Digest;
 
         super::Sha1::default().digest(buf).0
+    }
+
+    pub fn pad(len: usize) -> StdPad {
+        let mut suffix = vec![0u8; 8];
+        beu64::encode(&mut suffix[..], 8*len as u64);
+        StdPad::new(suffix, 64)
     }
 }
 

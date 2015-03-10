@@ -33,3 +33,24 @@ pub mod sha512224;
 
 #[stable(feature = "default", since = "1.0.0")]
 pub mod sha512256;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha3224;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha3256;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha3384;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod sha3512;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod shake128;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod shake256;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod keccak;

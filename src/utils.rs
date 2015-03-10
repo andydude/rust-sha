@@ -144,6 +144,13 @@ impl StdPad {
             block_len: block_len,
         }
     }
+    pub fn with_prefix(prefix: u8, suffix: Vec<u8>, block_len: usize) -> StdPad {
+        StdPad {
+            prefix: prefix,
+            suffix: suffix,
+            block_len: block_len,
+        }
+    }
 }
 
 impl ReadPad for StdPad {

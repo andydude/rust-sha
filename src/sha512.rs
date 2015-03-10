@@ -310,22 +310,19 @@ pub mod ops {
 
 #[cfg(test)]
 mod tests {
-    use std::str;
     use std::default::Default;
-    use std::io::prelude::*;
-    use bswap::beu64;
     use serialize::hex::ToHex;
     use test::Bencher;
     use super::Sha512;
-    use utils::{Reset, Digest, DigestExt};
+    use utils::{Digest, DigestExt};
 
     //
     // Helper functions
     //
 
-    fn digest_block(state: &mut [u64; 8], buf: &[u8]) {
-        super::ops::digest_block(state, buf);
-    }
+    //fn digest_block(state: &mut [u64; 8], buf: &[u8]) {
+    //    super::ops::digest_block(state, buf);
+    //}
 
     fn digest(buf: &[u8]) -> Sha512 {
         let mut h: Sha512 = Default::default();
@@ -333,9 +330,9 @@ mod tests {
         h
     }
 
-    fn digest_to_bytes(buf: &[u8]) -> Vec<u8> {
-        digest(buf).to_bytes()
-    }
+    //fn digest_to_bytes(buf: &[u8]) -> Vec<u8> {
+    //    digest(buf).to_bytes()
+    //}
 
     fn digest_to_hex(msg: &str) -> String {
         digest(&msg.as_bytes()).to_hex()
