@@ -88,7 +88,6 @@ mod impls {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use serialize::hex::ToHex;
     use utils::{Digest, DigestExt};
     use super::Sha3384;
 
@@ -103,7 +102,7 @@ mod tests {
     #[test]
     fn test_sha3384_empty() {
 
-        assert_eq!(digest_to_hex("").as_slice(),
+        assert_eq!(digest_to_hex(""),
                    concat!("0c63a75b845e4f7d01107d852e4c2485",
                            "c51a50aaaa94fc61995e71bbee983a2a",
                            "c3713831264adb47fb6bd1e058d5f004"));

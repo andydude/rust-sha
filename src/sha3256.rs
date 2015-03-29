@@ -88,7 +88,6 @@ mod impls {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use serialize::hex::ToHex;
     use test::Bencher;
     use utils::{Digest, DigestExt};
     use super::Sha3256;
@@ -118,7 +117,7 @@ mod tests {
     #[test]
     fn test_sha3256_empty() {
 
-        assert_eq!(digest_to_hex("").as_slice(),
+        assert_eq!(digest_to_hex(""),
                    concat!("a7ffc6f8bf1ed766",
                            "51c14756a061d662",
                            "f580ff4de43b49fa",
@@ -136,25 +135,25 @@ mod tests {
         bh.bytes = 64u64;
     }
 
-    #[bench]
-    pub fn bench_sha256_block_simd(bh: & mut Bencher) {
-        use super::super::keccak_simd::ops::digest_block;
-        let mut state: [u64; 25] = [0; 25];
-        let bytes = [1u8; 136];
-        let block = &bytes[..];
-        bh.iter( || { digest_block(&mut state, block); });
-        bh.bytes = 64u64;
-    }
-
-    #[bench]
-    pub fn bench_sha256_block_simd2(bh: & mut Bencher) {
-        use super::super::keccak_simd::ops::digest_block;
-        let mut state: [u64; 25] = [0; 25];
-        let bytes = [1u8; 136];
-        let block = &bytes[..];
-        bh.iter( || { digest_block(&mut state, block); });
-        bh.bytes = 64u64;
-    }
+    //#[bench]
+    //pub fn bench_sha256_block_simd(bh: & mut Bencher) {
+    //    use super::super::keccak_simd::ops::digest_block;
+    //    let mut state: [u64; 25] = [0; 25];
+    //    let bytes = [1u8; 136];
+    //    let block = &bytes[..];
+    //    bh.iter( || { digest_block(&mut state, block); });
+    //    bh.bytes = 64u64;
+    //}
+    //
+    //#[bench]
+    //pub fn bench_sha256_block_simd2(bh: & mut Bencher) {
+    //    use super::super::keccak_simd::ops::digest_block;
+    //    let mut state: [u64; 25] = [0; 25];
+    //    let bytes = [1u8; 136];
+    //    let block = &bytes[..];
+    //    bh.iter( || { digest_block(&mut state, block); });
+    //    bh.bytes = 64u64;
+    //}
 
 
     #[bench]

@@ -54,5 +54,5 @@ pub mod shake256;
 #[stable(feature = "default", since = "1.0.0")]
 pub mod keccak;
 
-#[stable(feature = "default", since = "1.0.0")]
-pub mod keccak_simd;
+//#[stable(feature = "default", since = "1.0.0")]
+//pub mod keccak_simd;

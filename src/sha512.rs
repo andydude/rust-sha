@@ -311,8 +311,6 @@ pub mod ops {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use serialize::hex::ToHex;
-    use test::Bencher;
     use super::Sha512;
     use utils::{Digest, DigestExt};
 
@@ -371,7 +369,7 @@ mod tests {
     #[test]
     fn test_sha512_empty() {
 
-        assert_eq!(digest_to_hex("").as_slice(),
+        assert_eq!(digest_to_hex(""),
                    concat!("cf83e1357eefb8bdf1542850d66d8007",
                            "d620e4050b5715dc83f4a921d36ce9ce",
                            "47d0d13c5d85f2b0ff8318d2877eec2f",
@@ -381,97 +379,97 @@ mod tests {
     #[test]
     fn test_sha512_hello() {
 
-        assert_eq!(digest_to_hex("hello world").as_slice(),
+        assert_eq!(digest_to_hex("hello world"),
                    concat!("309ecc489c12d6eb4cc40f50c902f2b4",
                            "d0ed77ee511a7c7a9bcd3ca86d4cd86f",
                            "989dd35bc5ff499670da34255b45b0cf",
                            "d830e81f605dcf7dc5542e93ae9cd76f"));
 
-        assert_eq!(digest_to_hex("hello world!").as_slice(),
+        assert_eq!(digest_to_hex("hello world!"),
                    concat!("db9b1cd3262dee37756a09b906497358",
                            "9847caa8e53d31a9d142ea2701b1b28a",
                            "bd97838bb9a27068ba305dc8d04a45a1",
                            "fcf079de54d607666996b3cc54f6b67c"));
 
-        assert_eq!(digest_to_hex("hello World").as_slice(),
+        assert_eq!(digest_to_hex("hello World"),
                    concat!("1ca107777d9d999bdd8099875438919b",
                            "5dca244104e393685f7d05f4feb5f181",
                            "f1878e1178daf1a8c97c5b290222609c",
                            "9515dd096344b625b37d7a8910076ed2"));
 
-        assert_eq!(digest_to_hex("hello World!").as_slice(),
+        assert_eq!(digest_to_hex("hello World!"),
                    concat!("6913f7893ca35886a8befb1f9c0875be",
                            "48b6a399e4a6cad42f6178995640045a",
                            "8c50f62552d58a4ec753d41ceb36ed8d",
                            "c79de1c3adfdae7805507060ba6b5b93"));
 
-        assert_eq!(digest_to_hex("Hello world").as_slice(),
+        assert_eq!(digest_to_hex("Hello world"),
                    concat!("b7f783baed8297f0db917462184ff4f0",
                            "8e69c2d5e5f79a942600f9725f58ce1f",
                            "29c18139bf80b06c0fff2bdd34738452",
                            "ecf40c488c22a7e3d80cdf6f9c1c0d47"));
 
-        assert_eq!(digest_to_hex("Hello world!").as_slice(),
+        assert_eq!(digest_to_hex("Hello world!"),
                    concat!("f6cde2a0f819314cdde55fc227d8d7da",
                            "e3d28cc556222a0a8ad66d91ccad4aad",
                            "6094f517a2182360c9aacf6a3dc32316",
                            "2cb6fd8cdffedb0fe038f55e85ffb5b6"));
 
-        assert_eq!(digest_to_hex("Hello World").as_slice(),
+        assert_eq!(digest_to_hex("Hello World"),
                    concat!("2c74fd17edafd80e8447b0d46741ee24",
                            "3b7eb74dd2149a0ab1b9246fb30382f2",
                            "7e853d8585719e0e67cbda0daa8f5167",
                            "1064615d645ae27acb15bfb1447f459b"));
 
-        assert_eq!(digest_to_hex("Hello World!").as_slice(),
+        assert_eq!(digest_to_hex("Hello World!"),
                    concat!("861844d6704e8573fec34d967e20bcfe",
                            "f3d424cf48be04e6dc08f2bd58c72974",
                            "3371015ead891cc3cf1c9d34b49264b5",
                            "10751b1ff9e537937bc46b5d6ff4ecc8"));
 
-        assert_eq!(digest_to_hex("hello, world").as_slice(),
+        assert_eq!(digest_to_hex("hello, world"),
                    concat!("8710339dcb6814d0d9d2290ef422285c",
                            "9322b7163951f9a0ca8f883d3305286f",
                            "44139aa374848e4174f5aada663027e4",
                            "548637b6d19894aec4fb6c46a139fbf9"));
 
-        assert_eq!(digest_to_hex("hello, world!").as_slice(),
+        assert_eq!(digest_to_hex("hello, world!"),
                    concat!("6c2618358da07c830b88c5af8c353508",
                            "0e8e603c88b891028a259ccdb9ac802d",
                            "0fc0170c99d58affcf00786ce188fc5d",
                            "753e8c6628af2071c3270d50445c4b1c"));
 
-        assert_eq!(digest_to_hex("hello, World").as_slice(),
+        assert_eq!(digest_to_hex("hello, World"),
                    concat!("7c8d44b246cfad2848ac0718d01c7291",
                            "3d2dc7552c5667967b92aefec699849c",
                            "ec8435147e8566d6798b80ecd6bc4554",
                            "35d4feba047a0707b2da86c0088dcfff"));
 
-        assert_eq!(digest_to_hex("hello, World!").as_slice(),
+        assert_eq!(digest_to_hex("hello, World!"),
                    concat!("c0d0df8be7405b0cdb12df4d674d64eb",
                            "ed62207ffe118ee5ee9d33071af4abf3",
                            "83d6efa2b56450e1475971e7e9105629",
                            "c11ad855b08e17e9fbc6584c08403990"));
 
-        assert_eq!(digest_to_hex("Hello, world").as_slice(),
+        assert_eq!(digest_to_hex("Hello, world"),
                    concat!("f986313ffca1a20c61fa2cff5cb597f1",
                            "af10a650aecca497a746e8d11d1b6bf3",
                            "3e9e6a25eb7ba26af2fcfaa70472d825",
                            "0b908419a188a16e17191fc26f423f52"));
 
-        assert_eq!(digest_to_hex("Hello, world!").as_slice(),
+        assert_eq!(digest_to_hex("Hello, world!"),
                    concat!("c1527cd893c124773d811911970c8fe6",
                            "e857d6df5dc9226bd8a160614c0cd963",
                            "a4ddea2b94bb7d36021ef9d865d5cea2",
                            "94a82dd49a0bb269f51f6e7a57f79421"));
 
-        assert_eq!(digest_to_hex("Hello, World").as_slice(),
+        assert_eq!(digest_to_hex("Hello, World"),
                    concat!("45546d4d71407e82ecda31eba5bf74b6",
                            "5bc092b0436a2409a6b615c1f78fdb2d",
                            "3da371758f07a65b5d2b3ee8fa9ea0c7",
                            "72dd1eff884c4c77d4290177b002ccdc"));
 
-        assert_eq!(digest_to_hex("Hello, World!").as_slice(),
+        assert_eq!(digest_to_hex("Hello, World!"),
                    concat!("374d794a95cdcfd8b35993185fef9ba3",
                            "68f160d8daf432d08ba9f1ed1e5abe6c",
                            "c69291e0fa2fe0006a52570ef18c19de",
@@ -481,14 +479,14 @@ mod tests {
     // #[test]
     // fn test_sha512_multi() {
     //     let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
-    //     assert_eq!("d33d14f2ea60beb394082598e05375cdd6ff8966315322c34b6faea80e7d5a7c", digest_to_hex(s).as_slice());
+    //     assert_eq!("d33d14f2ea60beb394082598e05375cdd6ff8966315322c34b6faea80e7d5a7c", digest_to_hex(s));
     // }
     //
     // #[test]
     // fn test_sha512_1k() {
     //     let buf = [0x20; 1000];
     //     let msg = str::from_utf8(&buf[..]).unwrap();
-    //     assert_eq!("08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952", digest_to_hex(msg).as_slice());
+    //     assert_eq!("08c9b52f61fadf1eff6fb89169f1735fbae7bb583b23cb119d0e1a0151bac952", digest_to_hex(msg));
     // }
     //
     // //
@@ -500,7 +498,7 @@ mod tests {
     //     let bytes = digest_to_bytes("hello world".as_bytes());
     //
     //     assert_eq!(b"\xb9\x4d\x27\xb9\x93\x4d\x3e\x08\xa5\x2e\x52\xd7\xda\x7d\xab\xfa\xc4\x84\xef\xe3\x7a\x53\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9",
-    //                bytes.as_slice());
+    //                bytes);
     // }
     //
     // //
@@ -555,7 +553,7 @@ mod tests {
     //     let mut bytes = vec![0u8; 8*4];
     //     beu64::encode_slice(&mut bytes[..], &state[..]);
     //     assert_eq!("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    //                bytes.as_slice().to_hex());
+    //                bytes.to_hex());
     // }
     //
     // #[test]
@@ -569,7 +567,7 @@ mod tests {
     //     let mut bytes = vec![0u8; 8*4];
     //     beu64::encode_slice(&mut bytes[..], &state[..]);
     //     assert_eq!("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
-    //                bytes.as_slice().to_hex());
+    //                bytes.to_hex());
     // }
     //
     // #[bench]

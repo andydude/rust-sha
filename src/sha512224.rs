@@ -119,7 +119,6 @@ pub mod consts {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use serialize::hex::ToHex;
     use utils::{Digest, DigestExt};
     use super::Sha512224;
 
@@ -134,7 +133,7 @@ mod tests {
     #[test]
     fn test_sha512224_empty() {
 
-        assert_eq!(digest_to_hex("").as_slice(),
+        assert_eq!(digest_to_hex(""),
                    concat!("6ed0dd02806fa89e",
                            "25de060c19d3ac86",
                            "cabb87d6a0ddd05c",

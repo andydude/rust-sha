@@ -11,7 +11,7 @@
 /// use self::sha::sha1::Sha1;
 /// use self::sha::utils::{Digest, DigestExt};
 ///
-/// assert_eq!(Sha1::default().digest("".as_bytes()).to_hex().as_slice(),
+/// assert_eq!(Sha1::default().digest("".as_bytes()).to_hex(),
 ///            "da39a3ee5e6b4b0d3255bfef95601890afd80709");
 /// ```
 ///
@@ -22,7 +22,7 @@
 /// use self::sha::sha1::Sha1;
 /// use self::sha::utils::{Digest, DigestExt};
 ///
-/// assert_eq!(Sha1::default().digest("abc".as_bytes()).to_hex().as_slice(),
+/// assert_eq!(Sha1::default().digest("abc".as_bytes()).to_hex(),
 ///            "a9993e364706816aba3e25717850c26c9cd0d89d");
 /// ```
 ///
@@ -54,7 +54,7 @@
 ///                                state[0], state[1], state[2], 
 ///                                state[3], state[4]);
 ///
-///     assert_eq!(hash.as_slice(),
+///     assert_eq!(hash,
 ///                "34aa973cd4c4daa4f61eeb2bdbad27316534016f");
 /// }
 /// ```
@@ -338,7 +338,6 @@ pub mod ops {
 mod tests {
     use std::default::Default;
     use std::io::prelude::*;
-    use serialize::hex::ToHex;
     use test::Bencher;
     use super::Sha1;
     use utils::{Digest, DigestExt};
@@ -347,9 +346,9 @@ mod tests {
     // Helper functions
     //
 
-    fn digest_block(state: &mut [u32; 5], buf: &[u8]) {
-        super::ops::digest_block(state, buf);
-    }
+    //fn digest_block(state: &mut [u32; 5], buf: &[u8]) {
+    //    super::ops::digest_block(state, buf);
+    //}
 
     fn digest(buf: &[u8]) -> Sha1 {
         let mut h: Sha1 = Default::default();
@@ -398,49 +397,49 @@ mod tests {
     #[test]
     fn test_sha1_empty() {
         assert_eq!("da39a3ee5e6b4b0d3255bfef95601890afd80709",
-                   digest_to_hex("").as_slice());
+                   digest_to_hex(""));
     }
 
     #[test]
     fn test_sha1_hello() {
         assert_eq!("2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
-                   digest_to_hex("hello world").as_slice());
+                   digest_to_hex("hello world"));
         assert_eq!("430ce34d020724ed75a196dfc2ad67c77772d169",
-                   digest_to_hex("hello world!").as_slice());
+                   digest_to_hex("hello world!"));
         assert_eq!("22c219648f00c61e5b3b1bd81ffa8e7767e2e3c5",
-                   digest_to_hex("hello World").as_slice());
+                   digest_to_hex("hello World"));
         assert_eq!("788245b4dad73c1e5a630c126c484c7a2464f280",
-                   digest_to_hex("hello World!").as_slice());
+                   digest_to_hex("hello World!"));
         assert_eq!("7b502c3a1f48c8609ae212cdfb639dee39673f5e",
-                   digest_to_hex("Hello world").as_slice());
+                   digest_to_hex("Hello world"));
         assert_eq!("d3486ae9136e7856bc42212385ea797094475802",
-                   digest_to_hex("Hello world!").as_slice());
+                   digest_to_hex("Hello world!"));
         assert_eq!("0a4d55a8d778e5022fab701977c5d840bbc486d0",
-                   digest_to_hex("Hello World").as_slice());
+                   digest_to_hex("Hello World"));
         assert_eq!("2ef7bde608ce5404e97d5f042f95f89f1c232871",
-                   digest_to_hex("Hello World!").as_slice());
+                   digest_to_hex("Hello World!"));
         assert_eq!("b7e23ec29af22b0b4e41da31e868d57226121c84",
-                   digest_to_hex("hello, world").as_slice());
+                   digest_to_hex("hello, world"));
         assert_eq!("1f09d30c707d53f3d16c530dd73d70a6ce7596a9",
-                   digest_to_hex("hello, world!").as_slice());
+                   digest_to_hex("hello, world!"));
         assert_eq!("ca3c58516ddef44b25693df5a915206e1bd094da",
-                   digest_to_hex("hello, World").as_slice());
+                   digest_to_hex("hello, World"));
         assert_eq!("dd0588c172986c32636ffdd8cc690de7b41bf253",
-                   digest_to_hex("hello, World!").as_slice());
+                   digest_to_hex("hello, World!"));
         assert_eq!("e02aa1b106d5c7c6a98def2b13005d5b84fd8dc8",
-                   digest_to_hex("Hello, world").as_slice());
+                   digest_to_hex("Hello, world"));
         assert_eq!("943a702d06f34599aee1f8da8ef9f7296031d699",
-                   digest_to_hex("Hello, world!").as_slice());
+                   digest_to_hex("Hello, world!"));
         assert_eq!("907d14fb3af2b0d4f18c2d46abe8aedce17367bd",
-                   digest_to_hex("Hello, World").as_slice());
+                   digest_to_hex("Hello, World"));
         assert_eq!("0a0a9f2a6772942557ab5355d76af442f8f65e01",
-                   digest_to_hex("Hello, World!").as_slice());
+                   digest_to_hex("Hello, World!"));
     }
 
     #[test]
     fn test_sha1_multi() {
         let s = "GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>";
-        assert_eq!("a31e8cb8a139d146a0070fa13795d6766acaccd4", digest_to_hex(s).as_slice());
+        assert_eq!("a31e8cb8a139d146a0070fa13795d6766acaccd4", digest_to_hex(s));
     }
 
 

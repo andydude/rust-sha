@@ -88,7 +88,6 @@ mod impls {
 #[cfg(test)]
 mod tests {
     use std::default::Default;
-    use serialize::hex::ToHex;
     use utils::{Digest, DigestExt};
     use super::Sha3512;
 
@@ -103,7 +102,7 @@ mod tests {
     #[test]
     fn test_sha3512_empty() {
 
-        assert_eq!(digest_to_hex("").as_slice(),
+        assert_eq!(digest_to_hex(""),
                    concat!("a69f73cca23a9ac5c8b567dc185a756e",
                            "97c982164fe25859e0d1dcc1475c80a6",
                            "15b2123af1f5f94c11e3e9402c3ac558",
