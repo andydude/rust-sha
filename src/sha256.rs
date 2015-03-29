@@ -199,6 +199,67 @@ pub mod ops {
     ///     sha256msg2(sha256msg1(work[0], work[1]) + temp, work[3])
     /// }
     /// ```
+    //#[inline]
+    //pub fn expand_round_x4(w: &mut [u32; 16], t: usize) {
+    //    use std::simd::u32x4;
+    //
+    //    // Not an intrinsic, but works like an unaligned load.
+    //    #[inline]
+    //    fn sha256load(v2: u32x4, v3: u32x4) -> u32x4 {
+    //        u32x4(v3.3, v2.0, v2.1, v2.2)
+    //    }
+    //    // Not an intrinsic, but useful for swapping vectors.
+    //    #[inline]
+    //    fn sha256swap(v0: u32x4) -> u32x4 {
+    //        u32x4(v0.2, v0.3, v0.0, v0.1)
+    //    }
+    //
+    //    /// Emulates `llvm.x86.sha256msg1` intrinsic.
+    //    #[inline]
+    //    fn sha256msg1(v0: u32x4, v1: u32x4) -> u32x4 {
+    //        // sigma 0 on vectors
+    //        #[inline]
+    //        fn sigma0x4(a: u32x4) -> u32x4 {
+    //            ((a >> u32x4( 7,  7,  7,  7)) | (a << u32x4(25, 25, 25, 25))) ^
+    //            ((a >> u32x4(18, 18, 18, 18)) | (a << u32x4(14, 14, 14, 14))) ^
+    //             (a >> u32x4( 3,  3,  3,  3))
+    //        }
+    //        v0 + sigma0x4(sha256load(v0, v1))
+    //    }
+    //
+    //    /// Emulates `llvm.x86.sha256msg2` intrinsic.
+    //    #[inline]
+    //    fn sha256msg2(v4: u32x4, v3: u32x4) -> u32x4 {
+    //        macro_rules! sigma1 {
+    //            ($a:expr) => ((rotate_right!($a, 17) ^ rotate_right!($a, 19) ^ ($a >> 10)))
+    //        }
+    //        macro_rules! sigma1 {
+    //            ($a:expr) => ((rotate_right!($a, 17) ^ rotate_right!($a, 19) ^ ($a >> 10)))
+    //        }
+    //        #[inline]
+    //        fn sigma1x4(x: u32x4) -> u32x4 {
+    //            ((a >> u32x4(17, 17, 17, 17)) | (a << u32x4(15, 15, 15, 15))) ^
+    //            ((a >> u32x4(19, 19, 19, 19)) | (a << u32x4(13, 13, 13, 13))) ^
+    //             (a >> u32x4(10, 10, 10, 10))
+    //        }
+    //
+    //        let u32x4(w15, w14, _, _) = v3;
+    //        let u32x4(x3, x2, x1, x0) = v4;
+    //        let v5 = u32x4(x1, x0, w15, w14);
+    //        let v6 = u32x4(w15, w14, 0, 0);
+    //        
+    //        v4 + sigma1x4(v5 + sigma1x4(v6))
+    //    }
+    //
+    //    let w0 = u32x4(w[(t + 3) & 15], w[(t + 2) & 15], w[(t + 1) & 15], w[(t + 0) & 15]);
+    //    let w4 = u32x4(w[(t + 7) & 15], w[(t + 6) & 15], w[(t + 5) & 15], w[(t + 4) & 15]);
+    //    let w8 = u32x4(w[(t + 11) & 15], w[(t + 10) & 15], w[(t + 9) & 15], w[(t + 8) & 15]);
+    //    let w12 = u32x4(w[(t + 15) & 15], w[(t + 14) & 15], w[(t + 13) & 15], w[(t + 12) & 15]);
+    //
+    //    let ret = sha256msg2(sha256msg1(w0, w4) + sha256load(w8, w12), w12);
+    //
+    //
+    //}
     #[inline]
     pub fn expand_round_x4(w: &mut [u32; 16], t: usize) {
         sha256_expand_round!(w, t);
@@ -696,10 +757,3 @@ mod tests {
     }
 
 }
-
-//#[cfg(test)]
-//mod tests {
-//    use digest::Digest;
-//    use sha2::{Sha512, Sha384, Sha512Trunc256, Sha512Trunc224, Sha256, Sha224};
-//
-//}

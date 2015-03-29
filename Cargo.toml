@@ -10,7 +10,6 @@ readme = "README.md"
 
 [dependencies]
 bswap = "*"
-rustc-serialize = "*"
 
 [lib]
 name = "sha"

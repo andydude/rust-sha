@@ -1,7 +1,7 @@
 use std::default::Default;
 use std::io::prelude::*;
 use std::io;
-use serialize::hex::ToHex;
+use bswap;
 
 pub trait Reset {
     fn reset(&mut self);
@@ -24,7 +24,7 @@ pub trait Digest: Default + Reset + Read + Write {
     }
     
     fn to_hex_len(&mut self, len: usize) -> String {
-        self.to_bytes_len(len).as_slice().to_hex()
+        bswap::u8::encode_hex(self.to_bytes_len(len).as_ref())
     }
 }
 
@@ -37,7 +37,7 @@ pub trait DigestExt: Digest {
     }
     
     fn to_hex(&mut self) -> String {
-        self.to_bytes().as_slice().to_hex()
+        bswap::u8::encode_hex(self.to_bytes().as_ref())
     }
 }
 
@@ -112,7 +112,7 @@ impl<I: Read, P: ReadPad, F: Fn(usize) -> P> PadBlocks<I, P, F> {
         
         if len < self.block_len && len > 0 {
             return Err(io::Error::new(
-                    io::ErrorKind::ResourceUnavailable,
+                    io::ErrorKind::BrokenPipe,
                     "unable to read block to end", None));
         }
         
@@ -243,7 +243,7 @@ impl ReadPad for StdPad {
 //        if len < self.block_len && len > 0 {
 //            return None;
 //            //return Err(io::Error::new(
-//            //        io::ErrorKind::ResourceUnavailable,
+//            //        io::ErrorKind::BrokenPipe,
 //            //        "unable to read block to end", None));
 //        }
 //        

@@ -1,9 +1,8 @@
 #![allow(unused_features)]
-#![feature(core, hash, io, collections, link_llvm_intrinsics, simd, simd_ffi, staged_api, std_misc, test)]
+#![feature(core, hash, io, collections, convert, link_llvm_intrinsics, slice_patterns, simd, simd_ffi, staged_api, std_misc, test)]
 //#![staged_api]
 // collections hash asm core libc
 
-extern crate "rustc-serialize" as serialize;
 extern crate test;
 extern crate bswap;
 
@@ -54,3 +53,6 @@ pub mod shake256;
 
 #[stable(feature = "default", since = "1.0.0")]
 pub mod keccak;
+
+#[stable(feature = "default", since = "1.0.0")]
+pub mod keccak_simd;
