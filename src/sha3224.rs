@@ -3,6 +3,7 @@
 pub struct Sha3224([u64; 25], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -45,7 +46,7 @@ mod impls {
             for block in buf.pad_blocks(144, |_: usize| {
                 StdPad::with_prefix(0x06u8, vec![0x80u8], 144)
                 }) {
-                super::super::keccak::ops::digest_block(&mut self.0, block);
+                super::super::keccak::ops::digest_block(&mut self.0, block.borrow());
             }
             Ok(())
         }
@@ -58,12 +59,11 @@ mod impls {
             // this requires special handling
             // because the default digest length
             // crosses a u64 boundary.
-            use std::slice::bytes::copy_memory;
             let mut buf2 = [0u8; 200];
             let state_buf = &self.0[..];
             leu64::encode_slice(&mut buf2[..], state_buf);
             let buf_len = buf.len();
-            copy_memory(buf, &buf2[..buf_len]);
+            buf.copy_from_slice(&buf2[..buf_len]);
             Ok(buf.len())
         }
     }

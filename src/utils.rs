@@ -113,20 +113,27 @@ impl<I: Read, P: ReadPad, F: Fn(usize) -> P> PadBlocks<I, P, F> {
         if len < self.block_len && len > 0 {
             return Err(io::Error::new(
                     io::ErrorKind::BrokenPipe,
-                    "unable to read block to end", None));
+                    "unable to read block to end"));
         }
         
         Ok(&self.buf[..self.block_len])
     }
 }
 
-impl<'a, I: Read, P: ReadPad, F: Fn(usize) -> P> Iterator for PadBlocks<I, P, F> {
-    type Item = &'a [u8];
+//trait BorrowIterator {
+//    type Item: ?Sized;
+//    fn next(&mut self) -> Option<&Self::Item>;
+//}
+
+impl<I: Read, P: ReadPad, F: Fn(usize) -> P> Iterator for PadBlocks< I, P, F> {
+    type Item = Vec<u8>;
     
-    fn next<'b>(&'b mut self) -> Option<&'b [u8]> {
+    fn next(&mut self) -> Option<Vec<u8>> {
         let buf = self.fill_buf().unwrap();
         if buf.len() == 0 { return None };
-        Some(buf)
+        let mut vec = Vec::new();
+        vec.extend_from_slice(buf);
+        Some(vec)
     }
 }
 

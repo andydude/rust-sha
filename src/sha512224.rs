@@ -3,6 +3,7 @@
 pub struct Sha512224([u64; 8], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -51,7 +52,7 @@ mod impls {
             }
 
             for block in buf.pad_blocks(128, |len: usize| pad(len)) {
-                super::super::sha512::ops::digest_block(&mut state, &block);
+                super::super::sha512::ops::digest_block(&mut state, block.borrow());
             }
 
             self.0 = state;
@@ -66,12 +67,11 @@ mod impls {
             // this requires special handling
             // because the default digest length
             // crosses a u64 boundary.
-            use std::slice::bytes::copy_memory;
             let mut buf2 = [0u8; 64];
             let state_buf = &self.0[..];
             beu64::encode_slice(&mut buf2[..], state_buf);
             let buf_len = buf.len();
-            copy_memory(buf, &buf2[..buf_len]);
+            buf.copy_from_slice(&buf2[..buf_len]);
             Ok(buf.len())
         }
     }

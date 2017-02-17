@@ -3,6 +3,7 @@
 pub struct Sha224([u32; 8], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -51,7 +52,7 @@ mod impls {
             }
 
             for block in buf.pad_blocks(64, |len: usize| pad(len)) {
-                super::super::sha256::ops::digest_block(&mut state, &block);
+                super::super::sha256::ops::digest_block(&mut state, block.borrow());
             }
 
             self.0 = state;

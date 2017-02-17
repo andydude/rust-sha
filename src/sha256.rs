@@ -3,6 +3,7 @@
 pub struct Sha256([u32; 8], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -51,7 +52,7 @@ mod impls {
             }
 
             for block in buf.pad_blocks(64, |len: usize| pad(len)) {
-                super::ops::digest_block(&mut state, &block);
+                super::ops::digest_block(&mut state, block.borrow());
             }
 
             self.0 = state;
@@ -97,7 +98,7 @@ mod impls {
 }
 
 /// TODO
-#[unstable(feature="default", reason="TODO")]
+//#[unstable(feature="default", reason="TODO")]
 pub mod consts {
 
     /// TODO
@@ -290,7 +291,14 @@ pub mod ops {
     /// ```
     #[inline]
     pub fn digest_round_x4(state: &mut [u32; 8], k: [u32; 4], w: [u32; 4]) {
-        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = *state;
+        let mut a = state[0];
+        let mut b = state[1];
+        let mut c = state[2];
+        let mut d = state[3];
+        let mut e = state[4];
+        let mut f = state[5];
+        let mut g = state[6];
+        let mut h = state[7];
         sha256_digest_round!(a, b, c, d, e, f, g, h, k[0], w[0]);
         sha256_digest_round!(h, a, b, c, d, e, f, g, k[1], w[1]);
         sha256_digest_round!(g, h, a, b, c, d, e, f, k[2], w[2]);

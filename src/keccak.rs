@@ -56,12 +56,12 @@ pub mod ops {
                 use super::consts::K;
                 
                 // temporary variables
-                let mut tmp: $ty;
-                let mut tca: $ty;
-                let mut tcb: $ty;
-                let mut tcc: $ty;
-                let mut tcd: $ty;
-                let mut tce: $ty;
+                let tmp: $ty;
+                let tca: $ty;
+                let tcb: $ty;
+                let tcc: $ty;
+                let tcd: $ty;
+                let tce: $ty;
                 let mut tda: $ty;
                 let mut tdb: $ty;
                 let mut tdc: $ty;
@@ -241,12 +241,32 @@ pub mod ops {
         //    }
         //}
 
-        let [mut a, mut b, mut c, mut d, mut e,
-             mut f, mut g, mut h, mut i, mut j,
-             mut k, mut m, mut n, mut o, mut p,
-             mut q, mut r, mut s, mut t, mut u,
-             mut v, mut w, mut x, mut y, mut z] = *state;
-
+        let mut a = state[0];
+        let mut b = state[1];
+        let mut c = state[2];
+        let mut d = state[3];
+        let mut e = state[4];
+        let mut f = state[5];
+        let mut g = state[6];
+        let mut h = state[7];
+        let mut i = state[8];
+        let mut j = state[9];
+        let mut k = state[10];
+        let mut m = state[11];
+        let mut n = state[12];
+        let mut o = state[13];
+        let mut p = state[14];
+        let mut q = state[15];
+        let mut r = state[16];
+        let mut s = state[17];
+        let mut t = state[18];
+        let mut u = state[19];
+        let mut v = state[20];
+        let mut w = state[21];
+        let mut x = state[22];
+        let mut y = state[23];
+        let mut z = state[24];
+        
         for ir in 0..24 {
             digest_round!(a, b, c, d, e,
                           f, g, h, i, j,

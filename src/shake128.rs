@@ -3,6 +3,7 @@
 pub struct Shake128([u64; 25], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -44,7 +45,7 @@ mod impls {
             for block in buf.pad_blocks(168, |_: usize| {
                 StdPad::with_prefix(0x1fu8, vec![0x80u8], 168)
                 }) {
-                super::super::keccak::ops::digest_block(&mut self.0, block);
+                super::super::keccak::ops::digest_block(&mut self.0, block.borrow());
             }
             Ok(())
         }
@@ -57,7 +58,6 @@ mod impls {
             // this requires special handling
             // because the default digest length
             // crosses a u64 boundary.
-            use std::slice::bytes::copy_memory;
             for chunk in buf.chunks_mut(168) {
                 if chunk.len() == 168 {
                     {
@@ -75,7 +75,7 @@ mod impls {
                     let state_buf = &self.0[..];
                     leu64::encode_slice(&mut buf2[..], state_buf);
                     let buf_len = chunk.len();
-                    copy_memory(chunk, &buf2[..buf_len]);
+                    chunk.copy_from_slice(&buf2[..buf_len]);
                 }
             }
             Ok(buf.len())

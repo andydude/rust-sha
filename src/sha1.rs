@@ -62,6 +62,7 @@
 pub struct Sha1(pub [u32; 5], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -103,7 +104,7 @@ mod impls {
             let ref buf = self.1;
 
             for block in buf.pad_blocks(64, super::ops::pad) {
-                super::ops::digest_block(&mut state, &block);
+                super::ops::digest_block(&mut state, block.borrow());
             }
 
             self.0 = state;
@@ -151,7 +152,7 @@ mod impls {
 }
 
 /// TODO
-#[unstable(feature="default", reason="TODO")]
+//#[unstable(feature="default", reason="TODO")]
 pub mod consts {
 
     /// TODO
@@ -263,7 +264,11 @@ pub mod ops {
     /// ```
     #[inline]
     pub fn digest_round_x4(state: &mut [u32; 5], w: [u32; 4], i: usize) {
-        let [mut a, mut b, mut c, mut d, mut e] = *state;
+        let mut a = state[0];
+        let mut b = state[1];
+        let mut c = state[2];
+        let mut d = state[3];
+        let mut e = state[4];
         sha1_digest_round!(a, b, c, d, e, w[0], i);
         sha1_digest_round!(e, a, b, c, d, w[1], i);
         sha1_digest_round!(d, e, a, b, c, w[2], i);

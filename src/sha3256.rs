@@ -3,6 +3,7 @@
 pub struct Sha3256([u64; 25], Vec<u8>);
 
 mod impls {
+    use std::borrow::Borrow;
     use std::default::Default;
     use std::hash::Hasher;
     use std::io::prelude::*;
@@ -45,7 +46,7 @@ mod impls {
             for block in buf.pad_blocks(136, |_: usize| {
                 StdPad::with_prefix(0x06u8, vec![0x80u8], 136)
                 }) {
-                super::super::keccak::ops::digest_block(&mut self.0, block);
+                super::super::keccak::ops::digest_block(&mut self.0, block.borrow());
             }
             Ok(())
         }
