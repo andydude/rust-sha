@@ -389,7 +389,6 @@ mod tests {
     use std::default::Default;
     use std::io::prelude::*;
     use bswap::beu32;
-    use test::Bencher;
     use super::Sha256;
     use utils::{Reset, Digest, DigestExt};
 
@@ -526,7 +525,7 @@ mod tests {
         let bytes = digest_to_bytes("hello world".as_bytes());
 
         assert_eq!(b"\xb9\x4d\x27\xb9\x93\x4d\x3e\x08\xa5\x2e\x52\xd7\xda\x7d\xab\xfa\xc4\x84\xef\xe3\x7a\x53\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9",
-                   bytes);
+                   bytes.as_slice());
     }
 
     //
@@ -599,110 +598,110 @@ mod tests {
                    encode_hex(bytes.as_ref()));
     }
 
-    #[bench]
-    pub fn bench_sha256_block(bh: & mut Bencher) {
-        let mut state: [u32; 8] = [0; 8];
-        let bytes = [1u8; 16*4];
-        let block = &bytes[..];
-        bh.iter( || { digest_block(&mut state, block); });
-        bh.bytes = 64u64;
-    }
+    //#[bench]
+    //pub fn bench_sha256_block(bh: & mut Bencher) {
+    //    let mut state: [u32; 8] = [0; 8];
+    //    let bytes = [1u8; 16*4];
+    //    let block = &bytes[..];
+    //    bh.iter( || { digest_block(&mut state, block); });
+    //    bh.bytes = 64u64;
+    //}
 
     //
     // Benchmarks for `digest_bytes`
     //
 
-    #[bench]
-    fn bench_sha256_hello_block(b: & mut Bencher) {
-        let mut state: [u32; 8] = [0; 8];
-        (&mut state[..]).clone_from_slice(&super::consts::H[..]);
-        let block_vec = make_hello_block();
-        let block = &block_vec[..];
-        b.iter( || { digest_block(&mut state, block) });
-        b.bytes = 64u64;
-    }
+    //#[bench]
+    //fn bench_sha256_hello_block(b: & mut Bencher) {
+    //    let mut state: [u32; 8] = [0; 8];
+    //    (&mut state[..]).clone_from_slice(&super::consts::H[..]);
+    //    let block_vec = make_hello_block();
+    //    let block = &block_vec[..];
+    //    b.iter( || { digest_block(&mut state, block) });
+    //    b.bytes = 64u64;
+    //}
 
-    #[bench]
-    fn bench_sha256_empty_block(b: & mut Bencher) {
-        let mut state: [u32; 8] = [0; 8];
-        (&mut state[..]).clone_from_slice(&super::consts::H[..]);
-        let block_vec = make_empty_block();
-        let block = &block_vec[..];
-        b.iter( || { digest_block(&mut state, block) });
-        b.bytes = 64u64;
-    }
+    //#[bench]
+    //fn bench_sha256_empty_block(b: & mut Bencher) {
+    //    let mut state: [u32; 8] = [0; 8];
+    //    (&mut state[..]).clone_from_slice(&super::consts::H[..]);
+    //    let block_vec = make_empty_block();
+    //    let block = &block_vec[..];
+    //    b.iter( || { digest_block(&mut state, block) });
+    //    b.bytes = 64u64;
+    //}
 
     //
     // Benchmarks for `digest`
     //
 
-    #[bench]
-    fn bench_sha256_10(b: & mut Bencher) {
-        let buf = [0x20u8; 10];
-        b.iter( || { digest(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_1k(b: & mut Bencher) {
-        let buf = [0x20u8; 1024];
-        b.iter( || { digest(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_64k(b: & mut Bencher) {
-        let buf = [0x20u8; 65536];
-        b.iter( || { digest(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
+    //#[bench]
+    //fn bench_sha256_10(b: & mut Bencher) {
+    //    let buf = [0x20u8; 10];
+    //    b.iter( || { digest(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_1k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 1024];
+    //    b.iter( || { digest(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_64k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 65536];
+    //    b.iter( || { digest(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
 
     //
     // Benchmarks for `digest_to_bytes`
     //
 
-    #[bench]
-    fn bench_sha256_to_bytes_10(b: & mut Bencher) {
-        let buf = [0x20u8; 10];
-        b.iter( || { digest_to_bytes(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_to_bytes_1k(b: & mut Bencher) {
-        let buf = [0x20u8; 1024];
-        b.iter( || { digest_to_bytes(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_to_bytes_64k(b: & mut Bencher) {
-        let buf = [0x20u8; 65536];
-        b.iter( || { digest_to_bytes(&buf[..]); });
-        b.bytes = buf.len() as u64;
-    }
+    //#[bench]
+    //fn bench_sha256_to_bytes_10(b: & mut Bencher) {
+    //    let buf = [0x20u8; 10];
+    //    b.iter( || { digest_to_bytes(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_to_bytes_1k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 1024];
+    //    b.iter( || { digest_to_bytes(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_to_bytes_64k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 65536];
+    //    b.iter( || { digest_to_bytes(&buf[..]); });
+    //    b.bytes = buf.len() as u64;
+    //}
 
     //
     // Benchmarks for `digest_to_hex`
     //
 
-    #[bench]
-    fn bench_sha256_to_hex_10(b: & mut Bencher) {
-        let buf = [0x20u8; 10];
-        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
-        b.iter( || { digest_to_hex(msg); });
-        b.bytes = msg.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_to_hex_1k(b: & mut Bencher) {
-        let buf = [0x20u8; 1024];
-        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
-        b.iter( || { digest_to_hex(msg); });
-        b.bytes = msg.len() as u64;
-    }
-    #[bench]
-    fn bench_sha256_to_hex_64k(b: & mut Bencher) {
-        let buf = [0x20u8; 65536];
-        let msg = ::std::str::from_utf8(&buf[..]).unwrap();
-        b.iter( || { digest_to_hex(msg); });
-        b.bytes = msg.len() as u64;
-    }
+    //#[bench]
+    //fn bench_sha256_to_hex_10(b: & mut Bencher) {
+    //    let buf = [0x20u8; 10];
+    //    let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+    //    b.iter( || { digest_to_hex(msg); });
+    //    b.bytes = msg.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_to_hex_1k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 1024];
+    //    let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+    //    b.iter( || { digest_to_hex(msg); });
+    //    b.bytes = msg.len() as u64;
+    //}
+    //#[bench]
+    //fn bench_sha256_to_hex_64k(b: & mut Bencher) {
+    //    let buf = [0x20u8; 65536];
+    //    let msg = ::std::str::from_utf8(&buf[..]).unwrap();
+    //    b.iter( || { digest_to_hex(msg); });
+    //    b.bytes = msg.len() as u64;
+    //}
 
     //
     // Test Structure
