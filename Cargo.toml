@@ -1,6 +1,6 @@
 [package]
 name = "sha"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Andrew Robbins <and_j_rob@yahoo.com>"]
 license = "LGPL-3.0+"
 homepage = "https://andydude.github.io/rust-sha/sha/index.html"
@@ -9,7 +9,7 @@ description = "Rust Secure Hash Algorithm (SHA) Library."
 readme = "README.md"
 
 [dependencies]
-bswap = "*"
+bswap = "1.0.0"
 
 [lib]
 name = "sha"
