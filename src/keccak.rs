@@ -22,29 +22,26 @@ pub mod consts {
 pub mod ops {
     use bswap::leu64;
 
-    macro_rules! dump_state {
-        ($state:expr) => {
-            {
-                let mut state3 = [0u8; 200];
-                leu64::encode_slice(&mut state3[..], $state);
-                for z in 0..12 {
-                    for byte in 0..16 {
-                        print!(" {:02x}", state3[16*z + byte]);
-                    }
-                    println!("");
-                }
-                for byte in 0..8 {
-                    print!(" {:02x}", state3[16*12 + byte]);
-                }
-                println!("");
-            }
-        }
-    }
+    //macro_rules! dump_state {
+    //    ($state:expr) => {
+    //        {
+    //            let mut state3 = [0u8; 200];
+    //            leu64::encode_slice(&mut state3[..], $state);
+    //            for z in 0..12 {
+    //                for byte in 0..16 {
+    //                    print!(" {:02x}", state3[16*z + byte]);
+    //                }
+    //                println!("");
+    //            }
+    //            for byte in 0..8 {
+    //                print!(" {:02x}", state3[16*12 + byte]);
+    //            }
+    //            println!("");
+    //        }
+    //    }
+    //}
     macro_rules! rotate_left {
         ($a:expr, $b:expr) => (($a << $b) ^ ($a >> (64 - $b)))
-    }
-    macro_rules! rotate_right {
-        ($a:expr, $b:expr) => (($a >> $b) ^ ($a << (64 - $b)))
     }
     macro_rules! digest_round {
         ($a:ident, $b:ident, $c:ident, $d:ident, $e:ident,

@@ -1,7 +1,6 @@
 //extern crate test;
 extern crate bswap;
 
-pub mod logic;
 pub mod utils;
 pub mod sha1;
 pub mod sha224;

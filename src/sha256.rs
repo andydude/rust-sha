@@ -142,19 +142,19 @@ pub mod ops {
         ($a:expr, $b:expr) => ((($a >> $b) ^ ($a << (32 - $b))))
     }
     macro_rules! sigma0 {
-        ($a:expr) => ((rotate_right!($a, 7) ^ rotate_right!($a, 18) ^ ($a >> 3)))
+        ($a:expr) => (rotate_right!($a, 7) ^ rotate_right!($a, 18) ^ ($a >> 3))
     }
     macro_rules! sigma1 {
-        ($a:expr) => ((rotate_right!($a, 17) ^ rotate_right!($a, 19) ^ ($a >> 10)))
+        ($a:expr) => (rotate_right!($a, 17) ^ rotate_right!($a, 19) ^ ($a >> 10))
     }
     macro_rules! big_sigma0 {
-        ($a:expr) => ((rotate_right!($a, 2) ^ rotate_right!($a, 13) ^ rotate_right!($a, 22)))
+        ($a:expr) => (rotate_right!($a, 2) ^ rotate_right!($a, 13) ^ rotate_right!($a, 22))
     }
     macro_rules! big_sigma1 {
-        ($a:expr) => ((rotate_right!($a, 6) ^ rotate_right!($a, 11) ^ rotate_right!($a, 25)))
+        ($a:expr) => (rotate_right!($a, 6) ^ rotate_right!($a, 11) ^ rotate_right!($a, 25))
     }
     macro_rules! bool3ary_202 {
-        ($a:expr, $b:expr, $c:expr) => (($c ^ ($a & ($b ^ $c))))
+        ($a:expr, $b:expr, $c:expr) => ($c ^ ($a & ($b ^ $c)))
     }
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))

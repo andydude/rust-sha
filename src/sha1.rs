@@ -171,6 +171,7 @@ pub mod consts {
         0xca62c1d6];
 }
 
+
 /// TODO: docs
 pub mod ops {
     use bswap::{beu32, beu64};
@@ -180,14 +181,14 @@ pub mod ops {
         ($a:expr, $b:expr) => (($a << $b) ^ ($a >> (32 - $b)))
     }
     macro_rules! bool3ary_150 {
-        ($a:expr, $b:expr, $c:expr) => (($a ^ $b ^ $c))
-    }
+        ($a:expr, $b:expr, $c:expr) => ($a ^ $b ^ $c)
+    } // 3, xor, parity, MD5H, SHA1F1, SHA1F3, --half, --sym, SHA1P
     macro_rules! bool3ary_202 {
-        ($a:expr, $b:expr, $c:expr) => (($c ^ ($a & ($b ^ $c))))
-    }
+        ($a:expr, $b:expr, $c:expr) => ($c ^ ($a & ($b ^ $c)))
+    } // 3, MD5F, SHA1F0, --half, SHA1C
     macro_rules! bool3ary_232 {
         ($a:expr, $b:expr, $c:expr) => (($a & $b) ^ ($a & $c) ^ ($b & $c))
-    }
+    } // 3, majority, SHA1F2, --half, SHA1M
 
     macro_rules! round_func {
         ($a:expr, $b:expr, $c:expr, $i:expr) => {
